@@ -103,7 +103,17 @@ npm run test:integration
 
 A integração exercita cadastro, atribuição/revisão de plano, retomada e finalização de sessão, conflitos de gravação, avaliações, isolamento de academias, permissões, credenciais, limitação de login, revogação de sessão e troca de senha. A suíte usa dados próprios; não aponte para a produção.
 
-O workflow [Verificação do produto](.github/workflows/ci.yml) instala as dependências, inicia PostgreSQL 16, aplica migrations, executa lint, tipos e testes, e compila a aplicação. O resultado de cada execução fica na aba Actions do GitHub; a existência do workflow não substitui uma execução aprovada.
+Para verificar a interface sobre a build de produção, mantenha `TEST_DATABASE_URL` configurada e execute:
+
+```bash
+npx playwright install chromium
+npm run build
+npm run test:e2e
+```
+
+O Playwright inicia a aplicação automaticamente e cria academias fictícias exclusivas para a verificação em desktop e celular. Exercita cadastro de professor/aluno, troca de senha inicial, configuração e CSV, criação de modelo, publicação/revisão de treino, registro, retomada, histórico e restrição de acesso. O relatório, capturas e traces de falha ficam em `playwright-report/` e `test-results/` (não versionados).
+
+O workflow [Verificação do produto](.github/workflows/ci.yml) instala as dependências, inicia PostgreSQL 16, aplica migrations, executa lint, tipos e testes, compila a aplicação e verifica os fluxos no Chromium em desktop e celular. Os relatórios ficam anexados à execução por sete dias. O resultado de cada execução fica na aba Actions do GitHub; a existência do workflow não substitui uma execução aprovada.
 
 ## Implantação e entrega
 
