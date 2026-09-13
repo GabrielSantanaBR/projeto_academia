@@ -65,6 +65,7 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   expect(csv.status()).toBe(200);
   expect(await csv.text()).toContain("Aluno Piloto");
   await fitsViewport(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: info.outputPath("academia.png"), fullPage: true });
   await logout(page);
 
@@ -75,6 +76,7 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await page.getByLabel("Séries", { exact: true }).fill("2");
   await page.getByLabel("Orientação para o aluno", { exact: true }).fill("Movimento controlado");
   await fitsViewport(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: info.outputPath("editor.png"), fullPage: true });
   await page.getByRole("button", { name: "Salvar modelo", exact: true }).click();
   await expect(page).toHaveURL(/\/templates$/);
@@ -83,6 +85,9 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await page.getByRole("button", { name: "Publicar treino", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Modelo Piloto", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Editar treino", exact: true }).click();
+  // The previous screen also has a "Nome do treino" field. Wait for the editor.
+  await expect(page).toHaveURL(/\/workout\/edit$/);
+  await expect(page.getByRole("heading", { name: "Editar treino", exact: true })).toBeVisible();
   await page.getByLabel("Nome do treino", { exact: true }).fill("Ciclo personalizado");
   await page.getByRole("button", { name: "Publicar treino para o aluno", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Ciclo personalizado", exact: true })).toBeVisible();
@@ -105,6 +110,7 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await expect(reps).toHaveValue("10");
   await expect(page.getByRole("checkbox", { name: "Série 1 de Agachamento feita", exact: true })).toBeChecked();
   await fitsViewport(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: info.outputPath("treino.png"), fullPage: true });
   await page.getByRole("button", { name: "Finalizar", exact: true }).click();
   await page.getByRole("button", { name: "Confirmar finalização", exact: true }).click();

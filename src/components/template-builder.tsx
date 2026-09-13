@@ -39,7 +39,7 @@ export function TemplateBuilder({ exercises, initial, kind = "template", student
       <label className={labelClassName}>Nome do {kind === "plan" ? "treino" : "modelo"}<input name="name" required minLength={3} maxLength={120} defaultValue={initial?.name} className={inputClassName} placeholder="Ex.: Condicionamento ABC" /></label>
       <label className={labelClassName}>Descrição<input name="description" maxLength={500} defaultValue={initial?.description ?? ""} className={inputClassName} placeholder="Objetivo e orientações para este ciclo" /></label>
       {kind === "plan" && <label className={labelClassName}>Válido até<input name="validUntil" type="date" defaultValue={initial?.validUntil} className={inputClassName} /><span className="mt-1 block text-sm font-normal text-[#64707d]">Sem data informada: 6 semanas.</span></label>}
-      <div className="flex items-center gap-5 text-sm text-[#64707d]"><strong className="text-[#161b22]">{days.length} dias</strong><span>{total} exercícios</span><span>Até 7 dias e 20 exercícios por dia</span></div>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#64707d]"><strong className="text-[#161b22]">{days.length} {days.length === 1 ? 'dia' : 'dias'}</strong><span>{total} {total === 1 ? 'exercício' : 'exercícios'}</span><span>Até 7 dias e 20 exercícios por dia</span></div>
     </section>
     <label className={`${labelClassName} max-w-lg`}>Filtrar catálogo<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar exercício ou grupo muscular" className={inputClassName} /></label>
     {days.map(day => <section key={day.key} className="overflow-hidden rounded-xl border border-[#dfe3e6] bg-white">

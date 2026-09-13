@@ -38,7 +38,7 @@ export function formatDuration(minutes?: number | null) {
 
 export function formatRelativeDate(value?: Date | null, now = new Date()) {
   if (!value) return "Sem registro";
-  const difference = Math.floor((now.getTime() - value.getTime()) / 86_400_000);
+  const difference = Math.round((Date.parse(toDateInputValue(now)) - Date.parse(toDateInputValue(value))) / 86_400_000);
   if (difference <= 0) return "Hoje";
   if (difference === 1) return "Ontem";
   return `Há ${difference} dias`;
@@ -46,17 +46,16 @@ export function formatRelativeDate(value?: Date | null, now = new Date()) {
 
 export function formatAge(birthDate?: Date | null) {
   if (!birthDate) return "—";
-  const now = new Date();
-  let age = now.getFullYear() - birthDate.getFullYear();
-  const birthdayThisYear = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-  if (birthdayThisYear > now) age -= 1;
+  const today = toDateInputValue(new Date());
+  const birthday = toDateInputValue(birthDate);
+  let age = Number(today.slice(0, 4)) - Number(birthday.slice(0, 4));
+  if (today.slice(5) < birthday.slice(5)) age -= 1;
   return `${age} anos`;
 }
 
 export function toDateInputValue(value?: Date | null) {
   if (!value) return "";
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const day = String(value.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(value);
+  const part = (type: string) => parts.find(p => p.type === type)!.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }

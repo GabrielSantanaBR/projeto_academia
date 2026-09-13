@@ -4,6 +4,7 @@ import { csvCell, toCsv } from "../src/lib/csv";
 import { optionalDate, optionalNumber } from "../src/lib/validation";
 import { normalizeSetLog } from "../src/lib/workout-domain";
 import { isPlanCurrent, getAttentionItems } from "../src/lib/attention";
+import { toDateInputValue, formatRelativeDate } from "../src/lib/format";
 
 const day = { code: "A", name: "Treino A", exercises: [{ exerciseId: "exercise", sets: 3, repsMin: 8, repsMax: 12, suggestedLoad: null, restSeconds: 60, notes: null }] };
 describe("commercial readiness boundaries", () => {
@@ -25,6 +26,13 @@ describe("commercial readiness boundaries", () => {
     const expiry = new Date("2026-09-11T02:59:59.999Z");
     expect(isPlanCurrent(expiry, new Date("2026-09-11T02:00:00Z"))).toBe(true);
     expect(isPlanCurrent(expiry, new Date("2026-09-11T03:00:00Z"))).toBe(false);
+  });
+  it("preserves the selected validity date when reopening an editor on a UTC server", () => {
+    const now = new Date("2026-09-10T12:00:00Z");
+    const saved = planExpiry("2026-10-01", now);
+    expect(toDateInputValue(saved)).toBe("2026-10-01");
+    expect(planExpiry(toDateInputValue(saved), now)).toEqual(saved);
+    expect(formatRelativeDate(new Date("2026-09-10T23:00:00-03:00"), new Date("2026-09-11T01:00:00-03:00"))).toBe("Ontem");
   });
   it("does not mark a new student with a valid plan as inactive on their first day", () => {
     const now = new Date("2026-09-10T12:00:00Z");
