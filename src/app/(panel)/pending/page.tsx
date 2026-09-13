@@ -4,13 +4,13 @@ import Link from "next/link";
 
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { getAttentionItems, type AttentionStudent } from "@/lib/attention";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getStudentsForViewer } from "@/lib/queries";
 
 export const metadata = { title: "Pendências" };
 
 export default async function PendingPage() {
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.ADMIN, Role.PROFESSOR);
   const students = await getStudentsForViewer(membership);
   const attention = getAttentionItems(
     students
@@ -40,7 +40,7 @@ export default async function PendingPage() {
         <section className="overflow-hidden border border-[#dfe3e6] bg-white">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-[#dfe3e6] bg-[#fffaf5] px-5 py-4 sm:px-6">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="size-5 text-[#e85d24]" />
+              <AlertTriangle className="size-5 text-[var(--accent)]" />
               <p className="font-bold text-[#27313a]">{attention.length} sinais para acompanhar</p>
             </div>
             <p className="hidden text-sm text-[#64707d] sm:block">Atualizado ao abrir a tela</p>

@@ -4,13 +4,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Badge, Metric, PageHeader, SectionHeading } from "@/components/ui";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getDashboardData } from "@/lib/queries";
 
 export const metadata = { title: "Visão geral" };
 
 export default async function DashboardPage() {
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.ADMIN, Role.PROFESSOR);
   if (membership.role !== Role.ADMIN) redirect("/students");
   const dashboard = await getDashboardData(membership.organizationId);
 
@@ -19,12 +19,12 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow="Operação da academia"
         title="Visão geral"
-        description="Os dados abaixo são calculados a partir dos alunos, treinos e sessões registrados na plataforma."
+        description="Acompanhe sua equipe e resolva as pendências de treino do dia."
       />
 
-      <section className="grid gap-px overflow-hidden border border-[#dfe3e6] bg-[#dfe3e6] sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[#dfe3e6] bg-[#dfe3e6] sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Alunos ativos" value={dashboard.metrics.activeStudents} helper="Base atual da academia" />
-        <Metric label="Professores" value={dashboard.metrics.teachers} helper="Com alunos atribuídos" />
+        <Metric label="Professores" value={dashboard.metrics.teachers} helper="Com acesso ativo" />
         <Metric
           label="Sem treino ativo"
           value={dashboard.metrics.withoutCurrentPlan}
@@ -40,14 +40,14 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.8fr)]">
-        <div className="border border-[#dfe3e6] bg-white">
+        <div className="rounded-xl border border-[#dfe3e6] bg-white">
           <div className="flex items-start justify-between gap-4 border-b border-[#e5e7e9] px-5 py-5 sm:px-6">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#e85d24]">Ação prioritária</p>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--accent)]">Ação prioritária</p>
               <h2 className="mt-2 text-lg font-bold text-[#161b22]">Precisam de atenção</h2>
               <p className="mt-1 text-sm text-[#64707d]">Sinais que pedem contato ou ajuste de treino.</p>
             </div>
-            <Link href="/pending" className="inline-flex items-center gap-1 text-sm font-bold text-[#c84411] hover:underline">
+            <Link href="/pending" className="inline-flex items-center gap-1 text-sm font-bold text-[var(--accent)] hover:underline">
               Ver tudo <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -73,12 +73,12 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="border border-[#dfe3e6] bg-white p-5 sm:p-6">
+        <div className="rounded-xl border border-[#dfe3e6] bg-white p-5 sm:p-6">
           <SectionHeading title="Distribuição por professor" description="Alunos ativos atribuídos" />
           <div className="mt-6 space-y-5">
             {dashboard.teacherDistribution.map((teacher) => {
               const total = Math.max(dashboard.metrics.activeStudents, 1);
-              const width = Math.max(6, (teacher.studentCount / total) * 100);
+              const width = (teacher.studentCount / total) * 100;
               return (
                 <div key={teacher.id}>
                   <div className="flex items-center justify-between gap-4 text-sm">
@@ -86,14 +86,14 @@ export default async function DashboardPage() {
                     <span className="font-bold text-[#161b22]">{teacher.studentCount}</span>
                   </div>
                   <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#edf0f2]">
-                    <div className="h-full rounded-full bg-[#e85d24]" style={{ width: `${width}%` }} />
+                    <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${width}%` }} />
                   </div>
                 </div>
               );
             })}
           </div>
           <div className="mt-8 border-t border-[#edf0f2] pt-5 text-sm">
-            <Link href="/teachers" className="inline-flex items-center gap-2 font-bold text-[#c84411] hover:underline">
+            <Link href="/teachers" className="inline-flex items-center gap-2 font-bold text-[var(--accent)] hover:underline">
               <Users className="size-4" /> Gerenciar professores
             </Link>
           </div>
@@ -102,21 +102,21 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 border-t border-[#dfe3e6] pt-6 sm:grid-cols-3">
         <div className="flex items-start gap-3 bg-white p-4">
-          <CalendarClock className="mt-0.5 size-5 text-[#e85d24]" />
+          <CalendarClock className="mt-0.5 size-5 text-[var(--accent)]" />
           <div>
             <p className="font-bold text-[#161b22]">{dashboard.metrics.expiredPlans} treinos vencidos</p>
             <p className="mt-1 text-sm text-[#64707d]">Atualize a prescrição antes do próximo treino.</p>
           </div>
         </div>
         <div className="flex items-start gap-3 bg-white p-4">
-          <Users className="mt-0.5 size-5 text-[#e85d24]" />
+          <Users className="mt-0.5 size-5 text-[var(--accent)]" />
           <div>
             <p className="font-bold text-[#161b22]">{dashboard.metrics.newStudents} alunos novos</p>
             <p className="mt-1 text-sm text-[#64707d]">Entraram nos últimos 14 dias.</p>
           </div>
         </div>
         <div className="flex items-start gap-3 bg-white p-4">
-          <CalendarClock className="mt-0.5 size-5 text-[#e85d24]" />
+          <CalendarClock className="mt-0.5 size-5 text-[var(--accent)]" />
           <div>
             <p className="font-bold text-[#161b22]">{dashboard.metrics.inactiveStudents} sem atividade recente</p>
             <p className="mt-1 text-sm text-[#64707d]">Sem treino há 10 dias ou mais.</p>

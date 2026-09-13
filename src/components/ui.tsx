@@ -18,7 +18,7 @@ export function PageHeader({
     <header className="flex flex-col justify-between gap-5 border-b border-[#dfe3e6] pb-6 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#e85d24]">{eyebrow}</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">{eyebrow}</p>
         )}
         <h1 className="text-2xl font-bold tracking-tight text-[#161b22] sm:text-3xl">{title}</h1>
         {description && <p className="mt-2 max-w-2xl text-sm leading-6 text-[#64707d]">{description}</p>}
@@ -39,9 +39,9 @@ export function ButtonLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors",
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors",
         variant === "primary"
-          ? "bg-[#e85d24] text-white hover:bg-[#c84411]"
+          ? "bg-[var(--accent)] text-white hover:bg-[#c84411]"
           : "border border-[#cfd5d9] bg-white text-[#27313a] hover:border-[#aeb7bd] hover:bg-[#fafafa]",
         className,
       )}
@@ -89,12 +89,12 @@ export function Metric({
     <div
       className={cn(
         "border-l-2 px-4 py-3",
-        tone === "accent" && "border-[#e85d24] bg-[#fff7ed]",
+        tone === "accent" && "border-[var(--accent)] bg-[#fff7ed]",
         tone === "alert" && "border-[#dc2626] bg-[#fef2f2]",
         tone === "default" && "border-[#cfd5d9] bg-white",
       )}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64707d]">{label}</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#64707d]">{label}</p>
       <p className="mt-2 text-2xl font-bold tracking-tight text-[#161b22]">{value}</p>
       {helper && <p className="mt-1 text-xs leading-5 text-[#64707d]">{helper}</p>}
     </div>
@@ -140,6 +140,6 @@ export function SectionHeading({
 }
 
 export const inputClassName =
-  "mt-1 block min-h-10 w-full rounded-lg border border-[#cfd5d9] bg-white px-3 py-2 text-sm text-[#161b22] outline-none transition placeholder:text-[#9aa3aa] focus:border-[#e85d24] focus:ring-2 focus:ring-[#fed7aa]";
+  "mt-1 block min-h-11 w-full rounded-lg border border-[#cfd5d9] bg-white px-3 py-2 text-sm text-[#161b22] outline-none transition placeholder:text-[#9aa3aa] focus:border-[var(--accent)] focus:ring-2 focus:ring-[#fed7aa]";
 
 export const labelClassName = "block text-sm font-semibold text-[#3c4650]";

@@ -25,7 +25,9 @@ export async function getStudentsForViewer(viewer: Viewer) {
   const where =
     viewer.role === Role.PROFESSOR
       ? { organizationId: viewer.organizationId, primaryTeacherId: viewer.id }
-      : { organizationId: viewer.organizationId };
+      : viewer.role === Role.STUDENT
+        ? { organizationId: viewer.organizationId, membershipId: viewer.id }
+        : { organizationId: viewer.organizationId };
 
   return prisma.studentProfile.findMany({
     where,
@@ -41,7 +43,7 @@ export async function getDashboardData(organizationId: string) {
       include: studentListInclude,
     }),
     prisma.membership.findMany({
-      where: { organizationId, role: Role.PROFESSOR },
+      where: { organizationId, role: Role.PROFESSOR, active: true },
       include: { user: true, assignedStudents: { where: { status: StudentStatus.ACTIVE } } },
       orderBy: { user: { name: "asc" } },
     }),
@@ -71,7 +73,10 @@ export async function getDashboardData(organizationId: string) {
       withoutCurrentPlan: plansWithNoCurrent.length,
       expiredPlans: plans.filter((plan) => plan.validUntil && !isPlanCurrent(plan.validUntil, now)).length,
       expiringPlans: attention.filter((item) => item.reason === "EXPIRING_WORKOUT").length,
-      inactiveStudents: attention.filter((item) => item.reason === "INACTIVE_STUDENT").length,
+      inactiveStudents: students.filter(student => {
+        const since = student.sessions[0]?.completedAt ?? student.firstEnrolledAt;
+        return now.getTime() - since.getTime() >= 10 * 86_400_000;
+      }).length,
       newStudents: students.filter((student) => {
         const days = Math.floor((now.getTime() - student.firstEnrolledAt.getTime()) / 86_400_000);
         return days <= 14;
@@ -131,7 +136,7 @@ export async function getStudentDetail(studentId: string, viewer: Viewer) {
 
 export async function getTeachers(organizationId: string) {
   return prisma.membership.findMany({
-    where: { organizationId, role: Role.PROFESSOR },
+    where: { organizationId, role: Role.PROFESSOR, active: true },
     include: {
       user: true,
       assignedStudents: {
@@ -146,7 +151,7 @@ export async function getTeachers(organizationId: string) {
 export async function getExercises(organizationId: string) {
   return prisma.exercise.findMany({
     where: {
-      OR: [{ isSystem: true }, { organizationId }],
+      OR: [{ isSystem: true, organizationId: null }, { organizationId }],
     },
     orderBy: [{ muscleGroup: "asc" }, { name: "asc" }],
   });
@@ -258,7 +263,7 @@ export async function getLastLoadsForExercises(
     include: {
       exercises: {
         where: { exerciseId: { in: exerciseIds } },
-        include: { sets: { orderBy: { setNumber: "desc" } } },
+        include: { sets: { where: { completedAt: { not: null } }, orderBy: { setNumber: "desc" } } },
       },
     },
   });

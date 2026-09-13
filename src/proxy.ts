@@ -2,6 +2,8 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse, type NextRequest } from "next/server";
 
 const protectedPrefixes = [
+  "/account",
+  "/settings",
   "/dashboard",
   "/students",
   "/teachers",
@@ -43,6 +45,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/account/:path*",
+    "/settings/:path*",
     "/dashboard/:path*",
     "/students/:path*",
     "/teachers/:path*",

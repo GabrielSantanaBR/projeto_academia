@@ -31,8 +31,12 @@ type AttentionOptions = {
   expiringWithinDays?: number;
 };
 
-const startOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+const calendarFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
+const startOfDay = (date: Date) => {
+  const parts = calendarFormatter.formatToParts(date);
+  const part = (type: string) => Number(parts.find(p => p.type === type)?.value);
+  return new Date(Date.UTC(part("year"), part("month") - 1, part("day")));
+};
 
 const differenceInDays = (from: Date, to: Date) =>
   Math.floor((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86_400_000);
@@ -96,7 +100,7 @@ export function getAttentionItems(
         ];
       }
 
-      if (!student.lastCompletedAt) {
+      if (!student.lastCompletedAt && daysSinceEnrollment >= inactiveAfterDays) {
         return [
           {
             studentId: student.id,
@@ -108,7 +112,7 @@ export function getAttentionItems(
         ];
       }
 
-      const inactiveDays = differenceInDays(student.lastCompletedAt, now);
+      const inactiveDays = student.lastCompletedAt ? differenceInDays(student.lastCompletedAt, now) : 0;
 
       if (inactiveDays >= inactiveAfterDays) {
         return [

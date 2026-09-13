@@ -27,12 +27,22 @@ enum WorkoutPlanStatus {
 enum WorkoutSessionStatus {
   IN_PROGRESS
   COMPLETED
+  ABANDONED
+}
+
+enum ExerciseUnit {
+  REPS
+  SECONDS
 }
 
 model Organization {
   id               String               @id @default(cuid())
   name             String
   slug             String               @unique
+  contactEmail     String?
+  phone            String?
+  city             String?
+  primaryColor     String               @default("#c84411")
   memberships      Membership[]
   studentProfiles  StudentProfile[]
   exercises        Exercise[]
@@ -51,6 +61,8 @@ model User {
   name         String
   email        String       @unique
   passwordHash String
+  sessionVersion Int        @default(0)
+  mustChangePassword Boolean @default(false)
   memberships  Membership[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -61,6 +73,7 @@ model Membership {
   organizationId      String
   userId              String
   role                Role
+  active              Boolean              @default(true)
   organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentProfile      StudentProfile?      @relation("StudentMembership")
@@ -82,6 +95,7 @@ model StudentProfile {
   primaryTeacherId String?
   birthDate        DateTime?
   goal             String?
+  phone            String?
   notes            String?
   status           StudentStatus        @default(ACTIVE)
   firstEnrolledAt  DateTime             @default(now())
@@ -104,6 +118,7 @@ model Exercise {
   isSystem                Boolean                  @default(false)
   name                    String
   muscleGroup             String
+  unit                    ExerciseUnit             @default(REPS)
   description             String?
   instructions            String?
   notes                   String?
@@ -239,6 +254,8 @@ model WorkoutSession {
   completedAt     DateTime?
   durationMinutes Int?
   status          WorkoutSessionStatus     @default(IN_PROGRESS)
+  version         Int                      @default(0)
+  updatedAt       DateTime                 @default(now()) @updatedAt
   organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   student         StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
   workoutPlan     WorkoutPlan              @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
@@ -259,6 +276,11 @@ model WorkoutSessionExercise {
   targetSets        Int
   targetRepsMin     Int
   targetRepsMax     Int
+  unit              ExerciseUnit     @default(REPS)
+  restSeconds       Int              @default(60)
+  suggestedLoad     Float?
+  instructions      String?
+  notes             String?
   completedAt       DateTime?
   session           WorkoutSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   workoutExercise   WorkoutExercise? @relation(fields: [workoutExerciseId], references: [id], onDelete: SetNull)
@@ -300,4 +322,12 @@ model PhysicalAssessment {
   createdAt              DateTime       @default(now())
 
   @@index([organizationId, studentId, assessedAt])
+}
+
+model LoginThrottle {
+  key       String   @id
+  attempts  Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }

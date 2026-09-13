@@ -9,7 +9,7 @@ export const optionalText = (maxLength: number) =>
 export const optionalNumber = z.preprocess(
   (value) => {
     if (value === "" || value === null || value === undefined) return undefined;
-    const number = Number(value);
+    const number = Number(typeof value === "string" ? value.trim().replace(",", ".") : value);
     return Number.isFinite(number) ? number : value;
   },
   z.number().finite().nonnegative().optional(),
@@ -18,8 +18,9 @@ export const optionalNumber = z.preprocess(
 export const optionalDate = z.preprocess(
   (value) => {
     if (!value) return undefined;
-    const date = new Date(String(value));
-    return Number.isNaN(date.getTime()) ? value : date;
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const date = new Date(`${value}T12:00:00.000Z`);
+    return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value ? value : date;
   },
   z.date().optional(),
 );

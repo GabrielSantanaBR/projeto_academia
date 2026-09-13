@@ -56,21 +56,16 @@ async function createUserWithMembership(input: {
 }
 
 async function main() {
-  await prisma.workoutSet.deleteMany();
-  await prisma.workoutSessionExercise.deleteMany();
-  await prisma.workoutSession.deleteMany();
-  await prisma.workoutExercise.deleteMany();
-  await prisma.workoutDay.deleteMany();
-  await prisma.workoutPlan.deleteMany();
-  await prisma.physicalAssessment.deleteMany();
-  await prisma.templateExercise.deleteMany();
-  await prisma.templateDay.deleteMany();
-  await prisma.trainingTemplate.deleteMany();
-  await prisma.studentProfile.deleteMany();
-  await prisma.membership.deleteMany();
-  await prisma.exercise.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.organization.deleteMany();
+  if (process.env.ALLOW_DEMO_SEED !== "true" || process.env.DEMO_MODE !== "true") {
+    throw new Error("Seed bloqueado: use apenas um ambiente de demonstração com DEMO_MODE=true e ALLOW_DEMO_SEED=true.");
+  }
+  if (await prisma.organization.findUnique({ where: { slug: "movimento-academia" } })) {
+    console.log("Demonstração já existe. Nenhum dado foi alterado.");
+    return;
+  }
+  if (await prisma.organization.count() || await prisma.user.count()) {
+    throw new Error("O seed demonstrativo só pode inicializar um banco vazio. Nenhum dado foi apagado.");
+  }
 
   const organization = await prisma.organization.create({
     data: {
@@ -205,6 +200,7 @@ async function main() {
         data: {
           name,
           muscleGroup,
+          unit: name === "Prancha" ? "SECONDS" : "REPS",
           instructions,
           description: `Exercício de ${muscleGroup.toLowerCase()}.`,
           isSystem: true,
@@ -454,6 +450,7 @@ async function main() {
             targetSets: item.sets,
             targetRepsMin: item.repsMin,
             targetRepsMax: item.repsMax,
+            unit: item.exercise.name === "Prancha" ? "SECONDS" : "REPS",
             completedAt,
             sets: {
               create: Array.from({ length: item.sets }, (_, index) => ({
