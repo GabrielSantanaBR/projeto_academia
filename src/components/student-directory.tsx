@@ -24,13 +24,14 @@ export function StudentDirectory({ students }: { students: StudentDirectoryItem[
   const [filter, setFilter] = useState("all");
 
   const filteredStudents = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+    const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+    const normalizedQuery = normalize(query.trim());
 
     return students.filter((student) => {
       const matchesQuery =
         !normalizedQuery ||
-        student.name.toLocaleLowerCase("pt-BR").includes(normalizedQuery) ||
-        student.teacherName?.toLocaleLowerCase("pt-BR").includes(normalizedQuery);
+        normalize(student.name).includes(normalizedQuery) ||
+        normalize(student.teacherName ?? "").includes(normalizedQuery);
       if (!matchesQuery) return false;
       if (filter === "without-plan") return student.planState === "none";
       if (filter === "expired") return student.planState === "expired";
@@ -48,8 +49,8 @@ export function StudentDirectory({ students }: { students: StudentDirectoryItem[
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por aluno ou professor"
-            className="min-h-10 w-full rounded-lg border border-[#cfd5d9] bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[#e85d24] focus:ring-2 focus:ring-[#fed7aa]"
+            placeholder="Buscar por aluno ou professor" aria-label="Buscar aluno ou professor"
+            className="min-h-10 w-full rounded-lg border border-[#cfd5d9] bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[#fed7aa]"
           />
         </label>
         <label className="flex min-h-10 items-center gap-2 rounded-lg border border-[#cfd5d9] px-3 text-sm text-[#56616c]">
@@ -69,10 +70,13 @@ export function StudentDirectory({ students }: { students: StudentDirectoryItem[
         </label>
       </div>
 
+      <p className="px-5 py-3 text-sm text-[#64707d]" role="status">{filteredStudents.length} de {students.length} alunos</p>
       {filteredStudents.length === 0 ? (
         <EmptyState title="Nenhum aluno encontrado" description="Ajuste a busca ou os filtros para ver outros alunos." />
       ) : (
-        <div className="overflow-x-auto">
+        <div>
+          <div className="divide-y divide-[#edf0f2] md:hidden">{filteredStudents.map(student => <Link key={student.id} href={`/students/${student.id}`} className="block p-5 hover:bg-[#fafafa]"><div className="flex items-start justify-between gap-3"><h2 className="font-bold text-[#27313a]">{student.name}</h2><Badge tone={student.status === "INACTIVE" ? "neutral" : student.planState === "expired" ? "danger" : student.planState === "none" ? "warning" : "success"}>{student.status === "INACTIVE" ? "Inativo" : student.planState === "expired" ? "Vencido" : student.planState === "none" ? "Sem treino" : "Ativo"}</Badge></div><p className="mt-2 text-sm text-[#64707d]">{student.teacherName ?? "Sem responsável"}</p><p className="mt-2 text-sm">{student.planName ?? "Nenhum treino atribuído"}</p>{student.attention && <p className="mt-2 text-sm text-amber-800">{student.attention}</p>}<p className="mt-3 text-xs text-[#64707d]">Última atividade: {formatRelativeDate(student.lastActivity ? new Date(student.lastActivity) : null)}</p></Link>)}</div>
+          <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[780px] text-left text-sm">
             <thead className="bg-[#fafafa] text-xs font-bold uppercase tracking-[0.09em] text-[#64707d]">
               <tr>
@@ -88,7 +92,7 @@ export function StudentDirectory({ students }: { students: StudentDirectoryItem[
               {filteredStudents.map((student) => (
                 <tr key={student.id} className="transition hover:bg-[#fffaf5]">
                   <td className="px-5 py-4">
-                    <Link href={`/students/${student.id}`} className="font-bold text-[#27313a] hover:text-[#c84411] hover:underline">
+                    <Link href={`/students/${student.id}`} className="font-bold text-[#27313a] hover:text-[var(--accent)] hover:underline">
                       {student.name}
                     </Link>
                     {student.attention && <p className="mt-1 text-xs font-medium text-[#b45309]">{student.attention}</p>}
@@ -114,6 +118,7 @@ export function StudentDirectory({ students }: { students: StudentDirectoryItem[
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </section>

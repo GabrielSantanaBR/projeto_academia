@@ -16,14 +16,14 @@ function MiniLineChart({ data, dataKey, color, unit }: { data: AssessmentPoint[]
     <div className="h-52 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={usableData} margin={{ top: 12, right: 12, left: -16, bottom: 0 }}>
-          <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fill: "#64707d", fontSize: 11 }} />
-          <YAxis tickLine={false} axisLine={false} tick={{ fill: "#64707d", fontSize: 11 }} width={32} />
+          <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fill: "#64707d", fontSize: 12 }} />
+          <YAxis tickLine={false} axisLine={false} tick={{ fill: "#64707d", fontSize: 12 }} width={32} />
           <Tooltip
             cursor={{ stroke: "#dfe3e6" }}
             contentStyle={{ border: "1px solid #dfe3e6", borderRadius: "8px", fontSize: "12px" }}
             formatter={(value) => [`${Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ${unit}`, dataKey === "weight" ? "Peso" : "Cintura"]}
           />
-          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
+          <Line type="linear" dataKey={dataKey} stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

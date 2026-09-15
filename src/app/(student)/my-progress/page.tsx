@@ -1,9 +1,10 @@
+import { Role } from "@prisma/client";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 import { AssessmentChart } from "@/components/assessment-chart";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { formatCm, formatDate, formatKg } from "@/lib/format";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getStudentDetail, getStudentWorkout } from "@/lib/queries";
 
 export const metadata = { title: "Minha evolução" };
@@ -14,7 +15,7 @@ function EvolutionMetric({ label, current, previous, unit }: { label: string; cu
   const formatter = unit === "kg" ? formatKg : formatCm;
 
   return (
-    <div className="border-l-2 border-[#e85d24] bg-white px-4 py-4">
+    <div className="border-l-2 border-[var(--accent)] bg-white px-4 py-4">
       <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#64707d]">{label}</p>
       <p className="mt-2 text-xl font-bold text-[#161b22]">{formatter(previous)} → {formatter(current)}</p>
       <p className={`mt-2 flex items-center gap-1 text-xs font-bold ${difference <= 0 ? "text-[#15803d]" : "text-[#b45309]"}`}>{difference <= 0 ? <TrendingDown className="size-3.5" /> : <TrendingUp className="size-3.5" />}{difference > 0 ? "+" : ""}{difference.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} {unit} desde a última avaliação</p>
@@ -23,7 +24,7 @@ function EvolutionMetric({ label, current, previous, unit }: { label: string; cu
 }
 
 export default async function MyProgressPage() {
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.STUDENT);
   const { student } = await getStudentWorkout(membership.id, membership.organizationId);
   const detail = await getStudentDetail(student.id, membership);
   const chronological = detail.assessments.slice().reverse();

@@ -1,3 +1,5 @@
+import { InputError } from "@/lib/action-result";
+
 export type CloneableWorkoutExercise = {
   exerciseId: string;
   sortOrder: number;
@@ -42,15 +44,15 @@ function readOptionalNumber(value: FormDataEntryValue | null, max: number) {
   if (value === null || String(value).trim() === "") return null;
   const number = Number(value);
   if (!Number.isFinite(number) || number < 0 || number > max) {
-    throw new Error("Registro de série inválido.");
+    throw new InputError("Registro de série inválido.");
   }
   return number;
 }
 
-export function normalizeSetLog(loadValue: FormDataEntryValue | null, repsValue: FormDataEntryValue | null) {
+export function normalizeSetLog(loadValue: FormDataEntryValue | null, repsValue: FormDataEntryValue | null, maxReps = 100) {
   const load = readOptionalNumber(loadValue, 1_000);
-  const rawReps = readOptionalNumber(repsValue, 100);
-  const reps = rawReps === null ? null : Math.round(rawReps);
+  const reps = readOptionalNumber(repsValue, maxReps);
+  if (reps !== null && !Number.isInteger(reps)) throw new InputError("Registro de série inválido. Use repetições ou segundos inteiros.");
 
   return {
     load,

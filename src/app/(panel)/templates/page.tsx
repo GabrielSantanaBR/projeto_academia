@@ -1,22 +1,25 @@
+import { Role } from "@prisma/client";
+import { ActionForm } from "@/components/action-form";
+import { duplicateTemplate, toggleTemplate } from "@/app/actions/training";
 import { ChevronRight, Plus } from "lucide-react";
 
 import { Badge, ButtonLink, EmptyState, PageHeader } from "@/components/ui";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getTemplates } from "@/lib/queries";
 
 export const metadata = { title: "Templates" };
 
 export default async function TemplatesPage() {
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.ADMIN, Role.PROFESSOR);
   const templates = await getTemplates(membership.organizationId);
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Biblioteca de treino"
-        title="Templates"
+        title="Modelos de treino"
         description="Modelos reutilizáveis. Ao atribuir um template a um aluno, o treino é copiado e pode ser personalizado sem alterar o original."
-        action={<ButtonLink href="/templates/new"><Plus className="size-4" /> Novo template</ButtonLink>}
+        action={<ButtonLink href="/templates/new"><Plus className="size-4" /> Novo modelo</ButtonLink>}
       />
       {templates.length === 0 ? (
         <EmptyState title="Nenhum template criado" description="Crie o primeiro modelo para acelerar a prescrição dos professores." action={<ButtonLink href="/templates/new">Criar template</ButtonLink>} />
@@ -36,10 +39,14 @@ export default async function TemplatesPage() {
                 <ChevronRight className="size-5 shrink-0 text-[#8a959d] transition group-open:rotate-90" />
               </summary>
               <div className="border-t border-[#edf0f2] bg-[#fafafa] px-5 py-5 sm:px-6">
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="mb-5 flex flex-wrap items-start gap-3">
+                  {(membership.role === Role.ADMIN || template.createdByMembershipId === membership.id) && <ButtonLink href={`/templates/${template.id}/edit`} variant="secondary">Editar modelo</ButtonLink>}
+                  <ActionForm action={duplicateTemplate}><input type="hidden" name="templateId" value={template.id} /><button className="secondary-button">Duplicar modelo</button></ActionForm>
+                  {(membership.role === Role.ADMIN || template.createdByMembershipId === membership.id) && <ActionForm action={toggleTemplate}><input type="hidden" name="templateId" value={template.id} /><input type="hidden" name="active" value={String(!template.active)} /><button className="secondary-button">{template.active ? "Arquivar" : "Reativar"}</button></ActionForm>}
+                </div><div className="grid gap-4 lg:grid-cols-3">
                   {template.days.map((day) => (
                     <div key={day.id} className="border border-[#dfe3e6] bg-white p-4">
-                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#e85d24]">Treino {day.code}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Treino {day.code}</p>
                       <h3 className="mt-1 font-bold text-[#27313a]">{day.name}</h3>
                       <ul className="mt-4 space-y-2 text-sm text-[#64707d]">
                         {day.exercises.map((exercise) => <li key={exercise.id}>{exercise.exercise.name} · {exercise.sets}×{exercise.repsMin}–{exercise.repsMax}</li>)}

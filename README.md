@@ -1,245 +1,132 @@
 # Movimento · Gestão de treino
 
-MVP de um SaaS B2B para academias independentes organizarem professores, acompanharem alunos e encontrarem rapidamente quem precisa de atenção.
+Plataforma web para academias independentes, com operação da administração, carteira do professor e registro do treino pelo aluno. A versão 0.2 prepara os fluxos principais para uma implantação piloto com homologação da academia.
 
-O produto não é uma ficha de treino isolada. Ele conecta a operação da academia ao treino executado pelo aluno:
+## Funcionalidades
 
-- a administração enxerga indicadores e pendências calculadas;
-- professores trabalham com a própria carteira de alunos, templates e histórico;
-- alunos registram treino, séries, cargas e repetições em uma experiência web mobile-first.
-
-## O que o MVP entrega
-
-### Administração
-
-- dashboard com alunos ativos, professores, treinos vencidos, treinos próximos do vencimento, alunos sem treino e alunos sem atividade;
-- lista pesquisável e filtrável de alunos;
-- cadastro de professores e alunos;
-- associação de aluno a professor responsável;
-- catálogo de exercícios globais e personalizados da academia;
-- pendências derivadas dos dados reais, sem tabela artificial de tarefas.
-
-### Professores
-
-- acesso somente aos alunos atribuídos a eles;
-- perfil do aluno com visão geral, treino, histórico e avaliações;
-- templates com múltiplos dias e exercícios;
-- atribuição de template com cópia independente para o aluno;
-- duplicação de treino;
-- criação rápida de treino simples;
-- registro de avaliação física básica.
-
-### Alunos
-
-- área web otimizada para celular;
-- visualização do treino atual e última carga por exercício;
-- início e retomada de treino;
-- registro de carga e repetições por série;
-- finalização persistida da sessão;
-- histórico de sessões e avaliações;
-- evolução de peso e cintura quando existirem pelo menos duas avaliações.
-
-## Stack
-
-- Next.js 16 com App Router e TypeScript estrito;
-- React 19;
-- Tailwind CSS 4;
-- PostgreSQL 16;
-- Prisma ORM 6;
-- Auth.js / NextAuth com login por credenciais;
-- Zod para validação de entradas;
-- Vitest para testes de domínio;
-- Docker Compose para banco local.
-
-## Arquitetura
-
-É um monólito modular: UI, ações de servidor e acesso a dados vivem no mesmo projeto Next.js, sem microserviços.
-
-```text
-src/
-├── app/
-│   ├── (panel)/        # painel de administração e professores
-│   ├── (student)/      # área mobile-first do aluno
-│   ├── actions/        # mutações protegidas via Server Actions
-│   └── api/auth/       # autenticação Auth.js
-├── components/         # componentes visuais e formulários
-├── lib/
-│   ├── auth.ts         # sessão e vínculo ativo
-│   ├── permissions.ts  # RBAC e regras de acesso ao aluno
-│   ├── queries.ts      # consultas com filtro por organização
-│   ├── attention.ts    # cálculo de pendências
-│   └── workout-domain.ts
-└── proxy.ts            # redirecionamento otimista de rotas privadas
-
-prisma/
-├── schema.prisma
-├── migrations/
-└── seed.ts
-```
-
-### Multi-tenancy
-
-`Organization` é a raiz do tenant. Todo recurso de negócio pertence a uma organização, direta ou indiretamente:
-
-- `Membership` liga usuário, organização e papel (`ADMIN`, `PROFESSOR` ou `STUDENT`);
-- perfis de aluno, planos, sessões, avaliações, templates e exercícios personalizados carregam `organizationId`;
-- o tenant é derivado da sessão no servidor — nunca de um `organizationId` enviado pelo navegador;
-- cada consulta e Server Action valida a organização e, quando aplicável, a propriedade do aluno.
-
-O professor só enxerga alunos atribuídos a ele. O aluno só enxerga o próprio perfil. Administradores só atuam na própria organização.
-
-## Segurança
-
-- senhas com hash `bcrypt` (cost 12);
-- sessão JWT segura do Auth.js com duração de 8 horas;
-- rotas privadas com Proxy apenas como camada de conveniência;
-- autorização revalidada no servidor em cada mutação;
-- validação Zod de todos os formulários;
-- proteção contra IDOR e cross-tenant nas consultas de aluno, planos, sessão e avaliação;
-- segredos somente em variáveis de ambiente; nenhum `.env` é versionado.
-
-> O Proxy não é usado como barreira de autorização. A proteção efetiva ocorre na camada de autenticação, nas consultas e nas Server Actions.
-
-## Pré-requisitos
-
-- Node.js 22+ (Node 24 recomendado);
-- npm 10+;
-- Docker Desktop ou Docker Engine com Docker Compose.
-
-## Início rápido
-
-1. Clone o repositório e entre na pasta.
-
-   ```bash
-   git clone https://github.com/GabrielSantanaBR/projeto_academia.git
-   cd projeto_academia
-   ```
-
-2. Crie o arquivo de ambiente.
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Defina um segredo real em `NEXTAUTH_SECRET`.
-
-   ```bash
-   openssl rand -base64 32
-   ```
-
-   Copie o resultado para `NEXTAUTH_SECRET` no `.env`.
-
-4. Suba o PostgreSQL local.
-
-   ```bash
-   docker compose up -d
-   ```
-
-5. Instale as dependências, gere o cliente e aplique as migrations.
-
-   ```bash
-   npm install
-   npm run db:generate
-   npm run db:migrate
-   ```
-
-6. Carregue os dados demonstrativos e inicie a aplicação.
-
-   ```bash
-   npm run db:seed
-   npm run dev
-   ```
-
-Abra [http://localhost:3000](http://localhost:3000).
-
-## Contas de demonstração
-
-Todas usam a senha `Demo123!`.
-
-| Perfil | E-mail | O que demonstrar |
-| --- | --- | --- |
-| Administrador | `admin@movimento.fit` | Dashboard, professores, alunos e pendências |
-| Professor | `rafael@movimento.fit` | Carteira, templates, treino e avaliações |
-| Aluno | `aluno@movimento.fit` | Treino no celular, séries, histórico e evolução |
-
-O seed cria uma academia fictícia, quatro professores, 25 alunos, exercícios, dois templates, planos ativos/vencidos, sessões e avaliações. Também inclui cenários de aluno novo sem treino, treino vencido, treino próximo do vencimento e falta de atividade recente.
-
-## Scripts
-
-| Comando | Uso |
+| Perfil | Recursos |
 | --- | --- |
-| `npm run dev` | inicia o ambiente de desenvolvimento |
-| `npm run build` | gera a build de produção |
-| `npm run start` | inicia a build de produção |
-| `npm run lint` | executa ESLint |
-| `npm run typecheck` | verifica TypeScript sem emitir arquivos |
-| `npm test` | executa os testes Vitest |
-| `npm run db:generate` | gera o Prisma Client |
-| `npm run db:migrate` | aplica/cria migrations no ambiente local |
-| `npm run db:deploy` | aplica migrations existentes em produção |
-| `npm run db:seed` | recria os dados demonstrativos |
+| Administração | Indicadores e pendências reais; cadastro, edição e desativação de professores; cadastro e transferência de alunos; identidade visual da academia; exportação CSV; recuperação assistida de acesso |
+| Professor | Carteira de alunos; catálogo de exercícios; criação, edição, cópia e arquivamento de modelos; treino individual completo; renovação de ciclos; avaliações e histórico |
+| Aluno | Treino no celular; instruções, descanso e última carga; séries em repetições ou segundos; salvar e retomar; finalização explícita; histórico e gráficos de evolução |
 
-Para produção, aplique as migrations com:
+O editor suporta até sete dias por plano e vinte exercícios por dia. Cada publicação cria uma versão independente: revisar um treino preserva as sessões anteriores. Uma sessão só registra como feitas as séries marcadas pelo aluno; registros não salvos são sinalizados. Alterações concorrentes em outra aba são recusadas para evitar sobrescrita silenciosa.
+
+Os painéis têm navegação ativa, busca, estados vazios, feedback de formulários e adaptação a celular. Nome, contato e cor da academia são configuráveis. A aplicação requer internet: não há sincronização offline nem aplicativo nativo.
+
+## Stack e organização
+
+Next.js 16 / React 19 / TypeScript / Tailwind CSS 4, PostgreSQL 16, Prisma 6, NextAuth por credenciais, Zod, Vitest e Playwright. As versões exatas ficam em `package-lock.json`. Requer Node.js 22 ou superior; a configuração Render utiliza Node 24.
+
+- `src/app/(panel)`: administração e professores.
+- `src/app/(student)`: área do aluno.
+- `src/app/actions`: mutações e autorização no servidor.
+- `src/lib`: autenticação, isolamento entre academias, validação e regras do treino.
+- `prisma`: modelo de dados, migrations e demonstração.
+- `scripts`: criação inicial de uma academia e inicialização de produção.
+- `tests`: domínio e integração com PostgreSQL descartável.
+
+`Organization` identifica a academia. O vínculo ativo (`Membership`) define o papel. O servidor deriva a organização da sessão e verifica a carteira do professor ou o perfil do aluno em cada operação. O redirecionamento do Proxy é apenas uma conveniência de navegação; a autorização é refeita no servidor.
+
+## Rodar localmente
 
 ```bash
+git clone https://github.com/GabrielSantanaBR/projeto_academia.git
+cd projeto_academia
+cp .env.example .env
+npm ci
+docker compose up -d
+npm run db:generate
 npm run db:deploy
 ```
 
-## Modelo de dados principal
+Preencha `NEXTAUTH_SECRET` com um segredo gerado por `openssl rand -base64 32`. O banco do Docker Compose usa apenas credenciais locais de desenvolvimento. Depois escolha **uma** das opções abaixo.
 
-| Entidade | Responsabilidade |
-| --- | --- |
-| `Organization` | academia/tenant |
-| `User` + `Membership` | identidade, vínculo e papel dentro da academia |
-| `StudentProfile` | objetivo, professor responsável, status e observações |
-| `Exercise` | catálogo global ou personalizado por academia |
-| `TrainingTemplate` | modelos reutilizáveis com dias e exercícios |
-| `WorkoutPlan` | cópia individual publicada para o aluno |
-| `WorkoutSession` | execução real de um dia de treino |
-| `WorkoutSet` | carga e repetições de cada série |
-| `PhysicalAssessment` | medidas físicas sem diagnóstico médico |
+### Academia real, sem dados fictícios
 
-## Testes
-
-Os testes de domínio cobrem os riscos mais importantes do MVP:
-
-- isolamento entre academias e RBAC;
-- acesso de professor apenas à própria carteira;
-- cálculo de pendências por datas reais;
-- clonagem independente de template ao atribuir treino;
-- validação de série e duração de sessão.
+Preencha no ambiente `ACADEMY_NAME`, `ACADEMY_SLUG`, `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` (12–72 caracteres). Mantenha `DEMO_MODE=false` e `ALLOW_DEMO_SEED=false`.
 
 ```bash
-npm test
+npm run setup:academy
+npm run dev
+```
+
+O comando cria a academia, o primeiro administrador e um catálogo inicial de 14 exercícios. Exige troca da senha no primeiro acesso. Recusa slug/e-mail já existentes e não substitui credenciais. Remova `ADMIN_PASSWORD` do ambiente após a criação. Acesse [localhost:3000](http://localhost:3000), troque a senha, cadastre um professor e depois os alunos.
+
+### Demonstração comercial em banco separado
+
+Em um banco vazio exclusivo de demonstração, configure `DEMO_MODE=true` e `ALLOW_DEMO_SEED=true`.
+
+```bash
+npm run db:seed
+npm run dev
+```
+
+O seed cria 25 alunos, quatro professores, modelos, planos, sessões, avaliações e cenários de pendência. Ele não apaga dados: se a demonstração já existe, encerra sem alterações; se encontra outra organização ou usuários, recusa a carga.
+
+| Perfil | E-mail | Senha de demonstração |
+| --- | --- | --- |
+| Administrador | `admin@movimento.fit` | `Demo123!` |
+| Professor | `rafael@movimento.fit` | `Demo123!` |
+| Aluno | `aluno@movimento.fit` | `Demo123!` |
+
+Essas contas são públicas e exclusivas de demonstração. Usar `DEMO_MODE=false` oculta a divulgação das contas, mas não remove usuários já criados: produção deve começar com seu próprio banco e credenciais.
+
+## Segurança e integridade
+
+- Hash bcrypt com custo 12; sessões de oito horas e limitação persistida de tentativas de login por e-mail (dez tentativas em quinze minutos).
+- Mudança de senha invalida sessões anteriores; recuperação feita pelo administrador exige reautenticação e gera senha temporária. Não há envio de e-mail transacional configurado.
+- Vínculos desativados e alunos inativos perdem acesso; o administrador deve transferir alunos ativos antes de desativar um professor.
+- Índices únicos e transações evitam dois planos publicados ou duas sessões em andamento por aluno.
+- Versões de sessão e bloqueios no banco protegem gravações concorrentes. Snapshots preservam nomes, unidades e orientações do treino executado.
+- Validação no servidor; mensagens de erro sem detalhes internos; CSV protegido contra interpretação de fórmulas; exportação apenas administrativa, sem medidas físicas.
+- Cabeçalhos contra enquadramento e interpretação de conteúdo; health check sem exposição de credenciais.
+
+## Validação
+
+```bash
+npm run db:generate
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
-## Decisões de produto e engenharia
+Os testes de integração usam PostgreSQL real e recusam execução sem `TEST_DATABASE_URL` com um nome de banco contendo `test`. Crie um banco descartável, aplique as migrations nele e execute:
 
-- Um aluno tem um professor principal no MVP. O modelo mantém a associação fora do usuário e pode evoluir para uma tabela de múltiplos profissionais no futuro.
-- Ao atribuir ou duplicar um treino, o plano publicado anterior é arquivado. Isso evita ambiguidade sobre qual treino é o atual.
-- Templates são imutáveis do ponto de vista do aluno: atribuir significa copiar os dias e exercícios para um `WorkoutPlan` próprio.
-- Pendências são calculadas, não cadastradas manualmente. Isso reduz duplicação e mantém o dashboard fiel ao banco.
-- A área do aluno é uma aplicação web responsiva com `manifest.ts`, preparada para evolução a PWA sem criar app nativo agora.
+```bash
+# Configure estas variáveis somente para o banco descartável.
+export TEST_DATABASE_URL="postgresql://movimento:movimento@localhost:5432/movimento_test"
+DATABASE_URL="$TEST_DATABASE_URL" npm run db:deploy
+npm run test:integration
+```
 
-## Fora do escopo deste MVP
+A integração exercita cadastro, atribuição/revisão de plano, retomada e finalização de sessão, conflitos de gravação, avaliações, isolamento de academias, permissões, credenciais, limitação de login, revogação de sessão e troca de senha. A suíte usa dados próprios; não aponte para a produção.
 
-- pagamentos, mensalidades e financeiro;
-- catraca, biometria e acesso físico;
-- chat, CRM completo, aulas coletivas e reservas;
-- dieta, nutrição, fisioterapia ou diagnóstico médico;
-- IA, geração automática de treino e previsão de evasão;
-- integrações com smartwatch, Health, Garmin, Strava ou sistemas externos;
-- aplicativos Android/iOS nativos, gamificação e rede social.
+Para verificar a interface sobre a build de produção, mantenha `TEST_DATABASE_URL` configurada e execute:
 
-## Próximas evoluções possíveis
+```bash
+npx playwright install chromium
+npm run build
+npm run test:e2e
+```
 
-1. múltiplas unidades por organização;
-2. múltiplos profissionais por aluno;
-3. edição detalhada de cada plano individual;
-4. score de engajamento e risco de evasão;
-5. integrações de acesso e financeiras;
-6. notificações de revisão e ausência;
-7. app mobile nativo usando a mesma API e regras de autorização.
+O Playwright inicia a aplicação automaticamente e cria academias fictícias exclusivas para a verificação em desktop e celular. Exercita cadastro de professor/aluno, troca de senha inicial, configuração e CSV, criação de modelo, publicação/revisão de treino, registro, retomada, histórico e restrição de acesso. O relatório, capturas e traces de falha ficam em `playwright-report/` e `test-results/` (não versionados).
+
+O workflow [Verificação do produto](.github/workflows/ci.yml) instala as dependências, inicia PostgreSQL 16, aplica migrations, executa lint, tipos e testes, compila a aplicação e verifica os fluxos no Chromium em desktop e celular. Os relatórios ficam anexados à execução por sete dias. O resultado de cada execução fica na aba Actions do GitHub; a existência do workflow não substitui uma execução aprovada.
+
+## Implantação e entrega
+
+- [Instalação, atualização e operação no Render](docs/IMPLANTACAO.md)
+- [Escopo comercial e roteiro de entrega em cinco dias](docs/ENTREGA_5_DIAS.md)
+- [Evidências e limites da validação](docs/VALIDACAO.md)
+
+`render.yaml` prepara serviço web e PostgreSQL na mesma região, migrations antes da liberação, segredo gerado e `/api/health`. Ele utiliza planos pagos: confira valores e backups disponíveis na conta antes de criar os recursos. Nenhum deploy é feito apenas por clonar este repositório.
+
+Antes de migrar um banco existente, faça e verifique um backup. A migration 0.2 é aditiva e não apaga registros; se houver planos publicados ou sessões em andamento duplicados, os novos índices recusam a migration. Resolva esses casos com o responsável pelos dados antes de reaplicar; não use reset ou seed para atualizar produção.
+
+## Escopo comercial
+
+A entrega é gestão de treinamento e acompanhamento. Pagamentos, mensalidades, catracas, biometria, disparos de WhatsApp, nutrição, IA, app nativo e importação automática de bases legadas exigem um projeto adicional.
+
+Uma entrega em cinco dias depende de infraestrutura acessível, materiais e decisões da academia no primeiro dia, escopo fechado e disponibilidade para homologação. A configuração de domínio, política de backup e teste com usuários reais fazem parte da implantação. Não apresente o prazo como garantia para integrações ainda não implementadas.

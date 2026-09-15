@@ -3,11 +3,13 @@ import bcrypt from "bcryptjs";
 import { getServerSession, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
+import { createHash } from "node:crypto";
+import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 
 const credentialsSchema = z.object({
-  email: z.string().email().max(160).transform((value) => value.toLowerCase()),
+  email: z.string().trim().email().max(160).transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(200),
 });
 
@@ -40,10 +42,22 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const key = createHash("sha256").update(parsed.data.email).digest("hex");
+        const now = new Date();
+        await prisma.loginThrottle.deleteMany({ where: { expiresAt: { lt: now } } });
+        const throttle = await prisma.loginThrottle.upsert({
+          where: { key },
+          create: { key, expiresAt: new Date(now.getTime() + 15 * 60_000) },
+          update: { attempts: { increment: 1 } },
+        });
+        if (throttle.attempts > 10) return null;
+
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
           include: {
             memberships: {
+              where: { active: true },
+              include: { studentProfile: true },
               orderBy: { createdAt: "asc" },
               take: 1,
             },
@@ -51,6 +65,8 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.memberships[0]) {
+          // Perform the same expensive password operation for unknown accounts.
+          await bcrypt.compare(parsed.data.password, "$2b$12$hRDHU2OXDcUeGaFxUTTk8e5.EFfgNYB7WO7Eo8GOAJdbOBhNCyfS2");
           return null;
         }
 
@@ -64,6 +80,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         const membership = user.memberships[0];
+        if (membership.studentProfile?.status === "INACTIVE") return null;
+        await prisma.loginThrottle.deleteMany({ where: { key } });
 
         return {
           id: user.id,
@@ -71,6 +89,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: membership.role,
           organizationId: membership.organizationId,
+          sessionVersion: user.sessionVersion,
         };
       },
     }),
@@ -81,6 +100,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.organizationId = user.organizationId;
+        token.sessionVersion = user.sessionVersion;
       }
 
       return token;
@@ -90,6 +110,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id ?? token.sub ?? "";
         session.user.role = token.role;
         session.user.organizationId = token.organizationId;
+        session.user.sessionVersion = token.sessionVersion;
       }
 
       return session;
@@ -98,7 +119,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-export async function getCurrentMembership() {
+export async function getCurrentMembership(options: { allowTemporaryPassword?: boolean } = {}) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const organizationId = session?.user?.organizationId;
@@ -116,9 +137,12 @@ export async function getCurrentMembership() {
     },
   });
 
-  if (!membership) {
+  if (!membership || !membership.active || membership.studentProfile?.status === "INACTIVE" ||
+      (session.user.sessionVersion ?? 0) !== membership.user.sessionVersion) {
     throw new AuthorizationError("Vínculo com a academia não encontrado.");
   }
+
+  if (membership.user.mustChangePassword && !options.allowTemporaryPassword) redirect("/account");
 
   return membership;
 }

@@ -1,10 +1,12 @@
+import { Role } from "@prisma/client";
+import { ActionForm } from "@/components/action-form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { createAssessment } from "@/app/actions/assessments";
 import { PageHeader, inputClassName, labelClassName } from "@/components/ui";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getStudentDetail } from "@/lib/queries";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -13,7 +15,7 @@ export const metadata = { title: "Nova avaliação" };
 
 export default async function NewAssessmentPage({ params }: PageProps) {
   const { id } = await params;
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.ADMIN, Role.PROFESSOR);
   let student: Awaited<ReturnType<typeof getStudentDetail>>;
 
   try {
@@ -24,9 +26,9 @@ export default async function NewAssessmentPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <Link href={`/students/${student.id}?tab=assessments`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#64707d] hover:text-[#c84411]"><ArrowLeft className="size-4" /> Voltar para avaliações</Link>
+      <Link href={`/students/${student.id}?tab=assessments`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#64707d] hover:text-[var(--accent)]"><ArrowLeft className="size-4" /> Voltar para avaliações</Link>
       <PageHeader title="Registrar avaliação" description={`Avaliação física simples de ${student.membership.user.name}. Não substitui acompanhamento médico.`} />
-      <form action={createAssessment} className="space-y-7 border border-[#dfe3e6] bg-white p-5 sm:p-7">
+      <ActionForm action={createAssessment} className="space-y-7 border border-[#dfe3e6] bg-white p-5 sm:p-7">
         <input type="hidden" name="studentId" value={student.id} />
         <div className="grid gap-5 sm:grid-cols-2">
           <label className={labelClassName}>Data<input name="assessedAt" type="date" className={inputClassName} /></label>
@@ -39,8 +41,8 @@ export default async function NewAssessmentPage({ params }: PageProps) {
           <div />
           <label className={`${labelClassName} sm:col-span-2`}>Observações<textarea name="notes" rows={5} className={inputClassName} placeholder="Anotações do profissional." /></label>
         </div>
-        <div className="flex justify-end border-t border-[#edf0f2] pt-5"><button type="submit" className="min-h-10 rounded-lg bg-[#e85d24] px-5 text-sm font-bold text-white hover:bg-[#c84411]">Salvar avaliação</button></div>
-      </form>
+        <div className="flex justify-end border-t border-[#edf0f2] pt-5"><button type="submit" className="min-h-10 rounded-lg bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-[#c84411]">Salvar avaliação</button></div>
+      </ActionForm>
     </div>
   );
 }

@@ -4,13 +4,13 @@ import { Plus } from "lucide-react";
 import { ButtonLink, PageHeader } from "@/components/ui";
 import { StudentDirectory, type StudentDirectoryItem } from "@/components/student-directory";
 import { getAttentionItems, isPlanCurrent, type AttentionStudent } from "@/lib/attention";
-import { getCurrentMembership } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getStudentsForViewer } from "@/lib/queries";
 
 export const metadata = { title: "Alunos" };
 
 export default async function StudentsPage() {
-  const membership = await getCurrentMembership();
+  const membership = await requireRole(Role.ADMIN, Role.PROFESSOR);
   const students = await getStudentsForViewer(membership);
   const attentionByStudent = new Map(
     getAttentionItems(
