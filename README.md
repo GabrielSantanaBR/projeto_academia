@@ -119,6 +119,7 @@ O workflow [Verificação do produto](.github/workflows/ci.yml) instala as depen
 
 - [Instalação, atualização e operação no Render](docs/IMPLANTACAO.md)
 - [Escopo comercial e roteiro de entrega em cinco dias](docs/ENTREGA_5_DIAS.md)
+- [Evidências e limites da validação](docs/VALIDACAO.md)
 
 `render.yaml` prepara serviço web e PostgreSQL na mesma região, migrations antes da liberação, segredo gerado e `/api/health`. Ele utiliza planos pagos: confira valores e backups disponíveis na conta antes de criar os recursos. Nenhum deploy é feito apenas por clonar este repositório.
 
