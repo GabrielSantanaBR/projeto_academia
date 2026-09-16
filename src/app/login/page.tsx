@@ -1,5 +1,4 @@
-import { ArrowRight, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import { Suspense } from "react";
 
 import { LoginForm } from "@/components/login-form";
@@ -10,6 +9,7 @@ export const metadata = { title: "Entrar" };
 
 export default function LoginPage() {
   const demo = process.env.DEMO_MODE === "true";
+
   return (
     <main className="grid min-h-screen bg-[#f5f6f6] lg:grid-cols-[1.1fr_0.9fr]">
       <section className="relative hidden overflow-hidden bg-[#161b22] px-12 py-12 text-white lg:flex lg:flex-col">
@@ -33,31 +33,46 @@ export default function LoginPage() {
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-slate-400">{demo ? "Ambiente demonstrativo · Dados fictícios" : "Movimento · Gestão de treino"}</p>
+        <p className="relative text-xs text-slate-400">
+          {demo ? "Ambiente demonstrativo · Dados fictícios" : "Movimento · Gestão de treino"}
+        </p>
       </section>
 
       <section className="flex items-center justify-center px-5 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <Logo className="lg:hidden" />
           <div className="mt-12 border border-[#dfe3e6] bg-white p-6 shadow-[0_14px_45px_rgba(22,27,34,0.06)] sm:p-8 lg:mt-0">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Acesso seguro</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#161b22]">Boas-vindas de volta</h2>
-            <p className="mt-2 text-sm leading-6 text-[#64707d]">Entre com sua conta da academia para continuar.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
+              {demo ? "Demonstração" : "Acesso seguro"}
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#161b22]">
+              {demo ? "Explore os dois lados da plataforma" : "Boas-vindas de volta"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#64707d]">
+              {demo
+                ? "Entre como professor para gerenciar alunos e treinos ou como aluno para acompanhar sua rotina." 
+                : "Entre com sua conta da academia para continuar."}
+            </p>
             <div className="mt-8">
               <Suspense fallback={<div className="h-48 animate-pulse rounded-lg bg-[#f5f6f6]" />}>
                 <LoginForm demo={demo} />
               </Suspense>
             </div>
-            {demo && <div className="mt-7 border-t border-[#edf0f2] pt-5">
-              <Link href="#credenciais" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:underline">
-                Ver contas de demonstração <ArrowRight className="size-4" />
-              </Link>
-            </div>}
-            {!demo && <p className="mt-5 text-sm text-[#64707d]">Esqueceu a senha? Solicite uma senha temporária à administração da sua academia.</p>}
+            {!demo && (
+              <p className="mt-5 text-sm text-[#64707d]">
+                Esqueceu a senha? Solicite uma senha temporária à administração da sua academia.
+              </p>
+            )}
           </div>
-          {demo && <div id="credenciais" className="mt-4 border border-[#dfe3e6] bg-white px-5 py-4 text-xs leading-5 text-[#64707d]">
-            <strong className="text-[#3c4650]">Demonstração:</strong> admin@movimento.fit, rafael@movimento.fit ou aluno@movimento.fit · senha <strong className="text-[#3c4650]">Demo123!</strong>
-          </div>}
+
+          {demo && (
+            <div className="mt-4 border border-[#dfe3e6] bg-white px-5 py-4 text-xs leading-5 text-[#64707d]">
+              <strong className="text-[#3c4650]">Contas de demonstração:</strong><br />
+              Professor: <strong className="text-[#3c4650]">rafael@movimento.fit</strong><br />
+              Aluno: <strong className="text-[#3c4650]">aluno@movimento.fit</strong><br />
+              Senha para ambas: <strong className="text-[#3c4650]">Demo123!</strong>
+            </div>
+          )}
         </div>
       </section>
     </main>
