@@ -19,6 +19,7 @@ export default async function EditExercise({ params }: { params: Promise<{ id: s
     <input name="unit" type="hidden" value={item.unit} /><p className="text-sm text-[#64707d]">Medida: {item.unit === "SECONDS" ? "segundos" : "repetições"}. Para mudar a medida, crie um novo exercício.</p>
     <label className={labelClassName}>Descrição<input name="description" maxLength={500} defaultValue={item.description ?? ""} className={inputClassName} /></label>
     <label className={labelClassName}>Instruções<textarea name="instructions" maxLength={1500} rows={4} defaultValue={item.instructions ?? ""} className={inputClassName} /></label>
+    <label className={labelClassName}>Vídeo de demonstração<input type="url" name="videoUrl" maxLength={300} defaultValue={item.videoUrl ?? ""} placeholder="https://www.youtube.com/watch?v=..." className={inputClassName} /></label>
     <label className={labelClassName}>Observações<textarea name="notes" maxLength={1000} rows={3} defaultValue={item.notes ?? ""} className={inputClassName} /></label>
     <button className="primary-button">Salvar exercício</button>
   </ActionForm></div>;

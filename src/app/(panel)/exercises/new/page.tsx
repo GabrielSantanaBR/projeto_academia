@@ -35,6 +35,7 @@ export default function NewExercisePage() {
           <label htmlFor="notes" className={labelClassName}>Observações internas</label>
           <textarea id="notes" name="notes" rows={3} className={inputClassName} />
         </div>
+        <label className={labelClassName}>Vídeo de demonstração (opcional)<input type="url" name="videoUrl" maxLength={300} placeholder="https://www.youtube.com/watch?v=..." className={inputClassName} /><span className="mt-1 block text-xs font-normal text-[#64707d]">Link HTTPS do YouTube ou Vimeo autorizado para uso. O aluno abre o vídeo quando quiser.</span></label>
         <div className="flex justify-end border-t border-[#edf0f2] pt-5">
           <button type="submit" className="min-h-10 rounded-lg bg-[var(--accent)] px-5 text-sm font-bold text-white hover:bg-[#c84411]">Adicionar exercício</button>
         </div>

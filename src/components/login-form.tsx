@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
+import { GraduationCap, LoaderCircle, LockKeyhole, UserRound, Utensils } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -14,7 +14,7 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [demoRole, setDemoRole] = useState<"professor" | "aluno" | null>(null);
+  const [demoRole, setDemoRole] = useState<"professor" | "aluno" | "nutricionista" | null>(null);
 
   function getDestination() {
     const requestedPath = params.get("callbackUrl");
@@ -57,12 +57,12 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
     }
   }
 
-  async function signInDemo(role: "professor" | "aluno") {
+  async function signInDemo(role: "professor" | "aluno" | "nutricionista") {
     setError(null);
     setDemoRole(role);
     setIsLoading(true);
 
-    const email = role === "professor" ? "rafael@movimento.fit" : "aluno@movimento.fit";
+    const email = role === "professor" ? "rafael@movimento.fit" : role === "aluno" ? "aluno@movimento.fit" : "nutri@movimento.fit";
 
     try {
       await authenticate(email, DEMO_PASSWORD);
@@ -112,6 +112,10 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
                 <span className="block text-sm font-bold text-[#161b22]">Entrar como Aluno</span>
                 <span className="mt-0.5 block text-xs text-[#64707d]">Treino, progresso e histórico</span>
               </span>
+            </button>
+            <button type="button" onClick={() => signInDemo("nutricionista")} disabled={isLoading} className="flex min-h-20 items-center gap-3 rounded-lg border border-amber-300 bg-white px-4 text-left transition hover:border-[var(--accent)] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2">
+              {demoRole === "nutricionista" ? <LoaderCircle className="size-5 animate-spin text-[var(--accent)]" /> : <Utensils className="size-5 text-[var(--accent)]" />}
+              <span><span className="block text-sm font-bold text-[#161b22]">Entrar como Nutricionista</span><span className="mt-0.5 block text-xs text-[#64707d]">Planos alimentares individuais</span></span>
             </button>
           </div>
         </div>

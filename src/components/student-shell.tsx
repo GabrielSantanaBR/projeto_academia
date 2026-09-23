@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { NavLinks } from "@/components/nav-links";
 import { Role } from "@prisma/client";
+import Link from "next/link";
 import { BarChart3, ClipboardList, History, UserRound } from "lucide-react";
 
 
@@ -9,9 +10,9 @@ import { UserMenu } from "@/components/user-menu";
 
 const items = [
   { href: "/my-workout", label: "Treino", icon: ClipboardList },
-  { href: "/my-history", label: "Histórico", icon: History },
-  { href: "/my-progress", label: "Evolução", icon: BarChart3 },
-  { href: "/my-assessments", label: "Avaliações", icon: UserRound },
+  { href: "/my-runs", label: "Corrida", icon: History },
+  { href: "/community", label: "Comunidade", icon: BarChart3 },
+  { href: "/my-nutrition", label: "Nutrição", icon: UserRound },
 ];
 
 export function StudentShell({
@@ -30,6 +31,7 @@ export function StudentShell({
           <UserMenu name={membership.user.name} role="Aluno" />
         </div>
       </header>
+      <nav className="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 py-3 text-xs font-semibold sm:px-6" aria-label="Seu acompanhamento"><Link href="/my-history" className="secondary-button !min-h-9 !text-xs">Histórico</Link><Link href="/my-progress" className="secondary-button !min-h-9 !text-xs">Evolução</Link><Link href="/my-assessments" className="secondary-button !min-h-9 !text-xs">Avaliações</Link></nav>
       <main id="main-content" className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#dfe3e6] bg-white pb-[env(safe-area-inset-bottom)]" aria-label="Navegação do aluno">
         <div className="mx-auto grid max-w-3xl grid-cols-4 px-1">

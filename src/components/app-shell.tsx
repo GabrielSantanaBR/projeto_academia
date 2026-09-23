@@ -33,12 +33,15 @@ const navigation: Array<{
   { href: "/teachers", label: "Professores", icon: UsersRound, roles: [Role.ADMIN] },
   { href: "/templates", label: "Modelos de treino", icon: ClipboardList, roles: [Role.ADMIN, Role.PROFESSOR] },
   { href: "/exercises", label: "Exercícios", icon: Activity, roles: [Role.ADMIN, Role.PROFESSOR] },
+  { href: "/nutritionists", label: "Nutricionistas", icon: UsersRound, roles: [Role.ADMIN] },
+  { href: "/nutrition", label: "Nutrição", icon: Activity, roles: [Role.NUTRITIONIST] },
+  { href: "/community", label: "Comunidade", icon: Users, roles: [Role.ADMIN, Role.PROFESSOR, Role.NUTRITIONIST] },
   { href: "/settings", label: "Academia", icon: Settings, roles: [Role.ADMIN] },
   { href: "/pending", label: "Pendências", icon: AlertTriangle, roles: [Role.ADMIN, Role.PROFESSOR] },
 ];
 
 function roleLabel(role: Role) {
-  return role === Role.ADMIN ? "Administrador" : "Professor";
+  return role === Role.ADMIN ? "Administrador" : role === Role.NUTRITIONIST ? "Nutricionista" : "Professor";
 }
 
 export function AppShell({
@@ -51,9 +54,9 @@ export function AppShell({
   const links = navigation.filter((item) => item.roles.includes(membership.role));
 
   return (
-    <div style={{ "--accent": membership.organization.primaryColor } as CSSProperties} className="min-h-screen bg-[#f5f6f6] md:grid md:grid-cols-[244px_minmax(0,1fr)]">
+    <div style={{ "--accent": membership.organization.primaryColor } as CSSProperties} className="min-h-screen bg-[#f5f7f9] md:grid md:grid-cols-[226px_minmax(0,1fr)]">
       <a href="#main-content" className="skip-link">Ir para o conteúdo</a>
-      <aside className="sticky top-0 hidden h-screen self-start overflow-y-auto border-r border-[#dfe3e6] bg-white px-4 py-6 md:flex md:flex-col">
+      <aside className="sticky top-0 m-3 hidden h-[calc(100vh-1.5rem)] self-start overflow-y-auto rounded-2xl border border-[#dfe3e6] bg-white px-3 py-5 shadow-sm md:flex md:flex-col">
         <Logo className="px-2" />
         <div className="mt-10 px-2">
           <p className="truncate text-sm font-bold text-[#161b22]">{membership.organization.name}</p>
@@ -73,7 +76,7 @@ export function AppShell({
             <Logo compact className="md:hidden" />
             <div className="hidden items-center gap-2 text-sm text-[#64707d] md:flex">
               <BookOpen className="size-4 text-[var(--accent)]" />
-              Gestão de treino
+              {membership.role === Role.NUTRITIONIST ? "Acompanhamento nutricional" : "Gestão de treino"}
             </div>
             <UserMenu name={membership.user.name} role={roleLabel(membership.role)} />
           </div>

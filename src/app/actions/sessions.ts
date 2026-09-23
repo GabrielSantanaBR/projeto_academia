@@ -28,7 +28,7 @@ export async function startStudentWorkout(data: FormData) {
       const session = await tx.workoutSession.create({ data: { organizationId: viewer.organizationId, studentId: student.id, workoutPlanId: day.workoutPlanId, workoutDayId: day.id,
         dayName: `${day.code} · ${day.name}`, exercises: { create: day.exercises.map(item => ({ workoutExerciseId: item.id, exerciseId: item.exerciseId,
           exerciseName: item.exercise.name, sortOrder: item.sortOrder, targetSets: item.sets, targetRepsMin: item.repsMin, targetRepsMax: item.repsMax,
-          unit: item.exercise.unit, restSeconds: item.restSeconds, suggestedLoad: item.suggestedLoad, instructions: item.exercise.instructions, notes: item.notes,
+          unit: item.exercise.unit, restSeconds: item.restSeconds, suggestedLoad: item.suggestedLoad, instructions: item.exercise.instructions, videoUrl: item.exercise.videoUrl, notes: item.notes,
           sets: { create: Array.from({ length: item.sets }, (_, i) => ({ setNumber: i + 1 })) },
         })) } } });
       return session.id;

@@ -22,6 +22,7 @@ const studentListInclude = {
 };
 
 export async function getStudentsForViewer(viewer: Viewer) {
+  if (viewer.role === Role.NUTRITIONIST) throw new AuthorizationError();
   const where =
     viewer.role === Role.PROFESSOR
       ? { organizationId: viewer.organizationId, primaryTeacherId: viewer.id }

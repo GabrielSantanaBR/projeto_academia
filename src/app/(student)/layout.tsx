@@ -14,6 +14,6 @@ export default async function StudentLayout({ children }: { children: React.Reac
     throw error;
   }
 
-  if (membership.role !== Role.STUDENT) redirect("/dashboard");
+  if (membership.role !== Role.STUDENT) redirect(membership.role === Role.NUTRITIONIST ? "/nutrition" : "/dashboard");
   return <StudentShell membership={membership}>{children}</StudentShell>;
 }

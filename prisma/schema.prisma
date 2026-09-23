@@ -11,6 +11,7 @@ enum Role {
   ADMIN
   PROFESSOR
   STUDENT
+  NUTRITIONIST
 }
 
 enum StudentStatus {
@@ -52,6 +53,11 @@ model Organization {
   workoutExercises WorkoutExercise[]
   sessions         WorkoutSession[]
   assessments      PhysicalAssessment[]
+  nutritionPlans   NutritionPlan[]
+  communityPosts   CommunityPost[]
+  communityComments CommunityComment[]
+  communityLikes   CommunityLike[]
+  runs             RunActivity[]
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 }
@@ -81,6 +87,11 @@ model Membership {
   createdTemplates    TrainingTemplate[]   @relation("TemplateAuthor")
   createdWorkoutPlans WorkoutPlan[]        @relation("WorkoutAuthor")
   recordedAssessments PhysicalAssessment[] @relation("AssessmentAuthor")
+  assignedNutritionStudents StudentProfile[] @relation("ResponsibleNutritionist")
+  authoredNutritionPlans NutritionPlan[] @relation("NutritionAuthor")
+  communityPosts CommunityPost[]
+  communityComments CommunityComment[]
+  communityLikes CommunityLike[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -93,6 +104,7 @@ model StudentProfile {
   organizationId   String
   membershipId     String               @unique
   primaryTeacherId String?
+  nutritionistId   String?
   birthDate        DateTime?
   goal             String?
   phone            String?
@@ -102,13 +114,17 @@ model StudentProfile {
   organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   membership       Membership           @relation("StudentMembership", fields: [membershipId], references: [id], onDelete: Cascade)
   primaryTeacher   Membership?          @relation("ResponsibleTeacher", fields: [primaryTeacherId], references: [id], onDelete: SetNull)
+  nutritionist     Membership?          @relation("ResponsibleNutritionist", fields: [nutritionistId], references: [id], onDelete: SetNull)
   workoutPlans     WorkoutPlan[]
   sessions         WorkoutSession[]
   assessments      PhysicalAssessment[]
+  nutritionPlans   NutritionPlan[]
+  runs             RunActivity[]
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
   @@index([organizationId, primaryTeacherId])
+  @@index([organizationId, nutritionistId])
   @@index([organizationId, status])
 }
 
@@ -121,6 +137,7 @@ model Exercise {
   unit                    ExerciseUnit             @default(REPS)
   description             String?
   instructions            String?
+  videoUrl                String?
   notes                   String?
   organization            Organization?            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   templateExercises       TemplateExercise[]
@@ -280,6 +297,7 @@ model WorkoutSessionExercise {
   restSeconds       Int              @default(60)
   suggestedLoad     Float?
   instructions      String?
+  videoUrl         String?
   notes             String?
   completedAt       DateTime?
   session           WorkoutSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -330,4 +348,78 @@ model LoginThrottle {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+model NutritionPlan {
+  id                    String         @id @default(cuid())
+  organizationId        String
+  studentId             String
+  nutritionistId        String
+  title                 String
+  guidance              String
+  meals                 Json
+  active                Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+  organization          Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student               StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  nutritionist          Membership     @relation("NutritionAuthor", fields: [nutritionistId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, studentId, active])
+}
+
+model CommunityPost {
+  id             String             @id @default(cuid())
+  organizationId String
+  authorId       String
+  body           String
+  hidden         Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author         Membership         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments       CommunityComment[]
+  likes          CommunityLike[]
+
+  @@index([organizationId, hidden, createdAt])
+}
+
+model CommunityComment {
+  id             String        @id @default(cuid())
+  organizationId String
+  postId         String
+  authorId       String
+  body           String
+  hidden         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  post           CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author         Membership    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, postId, createdAt])
+}
+
+model CommunityLike {
+  organizationId String
+  postId         String
+  memberId       String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  post           CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  member         Membership    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([postId, memberId])
+  @@index([organizationId, memberId])
+}
+
+model RunActivity {
+  id              String         @id @default(cuid())
+  organizationId  String
+  studentId       String
+  startedAt       DateTime
+  durationSeconds Int
+  distanceMeters  Int
+  points          Json
+  createdAt       DateTime       @default(now())
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, studentId, createdAt])
 }

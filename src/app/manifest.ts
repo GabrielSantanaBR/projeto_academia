@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Movimento · Gestão de treino",
+    name: "Movimento · Academia conectada",
     short_name: "Movimento",
-    description: "Acompanhamento de treino para academias, professores e alunos.",
+    description: "Treinos, corridas, comunidade e nutrição para sua academia.",
     start_url: "/",
     display: "standalone",
     background_color: "#f5f6f6",

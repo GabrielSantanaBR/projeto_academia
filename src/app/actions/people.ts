@@ -31,6 +31,7 @@ const updateStudentSchema = z.object({
   studentId: z.string().min(1),
   name: z.string().trim().min(2).max(120),
   primaryTeacherId: z.string().min(1).optional(),
+  nutritionistId: z.string().optional(),
   birthDate: optionalDate.refine(value => !value || value <= new Date()),
   goal: optionalText(180),
   phone: optionalText(25),
@@ -128,6 +129,12 @@ export async function updateStudent(formData: FormData) {
   await prisma.$transaction(async tx => {
     const student = await lockManagedStudent(tx, viewer, input.studentId);
     const primaryTeacherId = input.primaryTeacherId || student.primaryTeacherId;
+    const nutritionistId = input.nutritionistId === undefined ? student.nutritionistId : input.nutritionistId || null;
+    if (nutritionistId !== student.nutritionistId && viewer.role !== Role.ADMIN) throw new AuthorizationError("Somente administradores podem trocar o nutricionista responsável.");
+    if (nutritionistId) {
+      const professional = await tx.membership.findFirst({ where: { id: nutritionistId, organizationId: viewer.organizationId, role: Role.NUTRITIONIST, active: true } });
+      if (!professional) throw new AuthorizationError("Nutricionista indisponível nesta academia.");
+    }
     if (primaryTeacherId !== student.primaryTeacherId) {
     if (viewer.role !== Role.ADMIN) {
       throw new AuthorizationError("Somente administradores podem trocar o professor responsável.");
@@ -144,6 +151,7 @@ export async function updateStudent(formData: FormData) {
       where: { id: student.id },
       data: {
         primaryTeacherId,
+        nutritionistId,
         birthDate: input.birthDate ?? null,
         goal: input.goal ?? null,
         phone: input.phone ?? null,
@@ -151,6 +159,9 @@ export async function updateStudent(formData: FormData) {
         status: input.status,
       },
     });
+    if (nutritionistId !== student.nutritionistId) {
+      await tx.nutritionPlan.updateMany({ where: { organizationId: viewer.organizationId, studentId: student.id, active: true }, data: { active: false } });
+    }
   });
 
   refreshPeoplePaths(input.studentId);
