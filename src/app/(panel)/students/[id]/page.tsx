@@ -11,6 +11,7 @@ import { Badge, ButtonLink, EmptyState, PageHeader, SectionHeading, inputClassNa
 import { formatAge, formatCm, formatDate, formatDateTime, formatDuration, formatKg, formatRelativeDate } from "@/lib/format";
 import { requireRole } from "@/lib/auth";
 import { getStudentDetail, getTemplates } from "@/lib/queries";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -41,6 +42,7 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   const activePlan = student.workoutPlans.find((plan) => plan.status === WorkoutPlanStatus.PUBLISHED) ?? null;
   const latestCompletedSession = student.sessions.find((session) => session.status === WorkoutSessionStatus.COMPLETED);
   const templates = tab === "training" ? (await getTemplates(membership.organizationId)).filter(t => t.active) : [];
+  const runSummary = tab === "overview" ? await prisma.runActivity.aggregate({ where: { organizationId: membership.organizationId, studentId: student.id }, _count: true, _sum: { distanceMeters: true } }) : null;
 
   return (
     <div className="space-y-7">
@@ -109,6 +111,7 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
               <p className="mt-4 text-sm leading-6 text-[#64707d]">Ainda não há treino concluído registrado para este aluno.</p>
             )}
           </aside>
+          <section className="border-l-4 border-[#78a3c9] bg-white p-5 sm:col-span-2 sm:p-6"><p className="text-xs font-bold uppercase tracking-widest text-[#386997]">Corridas do aluno</p><p className="mt-2 text-lg font-semibold">{runSummary?._count ?? 0} corridas · {((runSummary?._sum.distanceMeters ?? 0)/1000).toFixed(1)} km</p><p className="mt-1 text-sm text-[#64707d]">Resumo para acompanhamento do professor. O trajeto detalhado fica particular ao aluno.</p></section>
         </div>
       )}
 

@@ -46,11 +46,11 @@ export default function LoginPage() {
               {demo ? "Demonstração" : "Acesso seguro"}
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#161b22]">
-              {demo ? "Explore os dois lados da plataforma" : "Boas-vindas de volta"}
+              {demo ? "Explore os perfis da plataforma" : "Boas-vindas de volta"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#64707d]">
               {demo
-                ? "Entre como professor para gerenciar alunos e treinos ou como aluno para acompanhar sua rotina." 
+                ? "Entre como professor, aluno ou nutricionista e experimente os fluxos de cada perfil."
                 : "Entre com sua conta da academia para continuar."}
             </p>
             <div className="mt-8">
@@ -70,7 +70,8 @@ export default function LoginPage() {
               <strong className="text-[#3c4650]">Contas de demonstração:</strong><br />
               Professor: <strong className="text-[#3c4650]">rafael@movimento.fit</strong><br />
               Aluno: <strong className="text-[#3c4650]">aluno@movimento.fit</strong><br />
-              Senha para ambas: <strong className="text-[#3c4650]">Demo123!</strong>
+              Nutricionista: <strong className="text-[#3c4650]">nutri@movimento.fit</strong><br />
+              Senha para os três: <strong className="text-[#3c4650]">Demo123!</strong>
             </div>
           )}
         </div>

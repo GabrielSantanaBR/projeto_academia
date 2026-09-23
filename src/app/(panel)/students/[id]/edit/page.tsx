@@ -10,6 +10,7 @@ import { PageHeader, inputClassName, labelClassName } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
 import { formatDate, toDateInputValue } from "@/lib/format";
 import { getStudentDetail, getTeachers } from "@/lib/queries";
+import { prisma } from "@/lib/prisma";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -27,6 +28,7 @@ export default async function EditStudentPage({ params }: PageProps) {
   }
 
   const teachers = membership.role === Role.ADMIN ? await getTeachers(membership.organizationId) : [];
+  const nutritionists = membership.role === Role.ADMIN ? await prisma.membership.findMany({ where: { organizationId: membership.organizationId, role: Role.NUTRITIONIST, active: true }, include: { user: true }, orderBy: { user: { name: "asc" } } }) : [];
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -47,6 +49,7 @@ export default async function EditStudentPage({ params }: PageProps) {
               <div className="rounded-lg border border-[#dfe3e6] bg-[#fafafa] px-4 py-3"><p className="text-xs font-bold uppercase tracking-[0.1em] text-[#8a959d]">Professor responsável</p><p className="mt-1 font-semibold text-[#27313a]">{student.primaryTeacher?.user.name ?? "Sem responsável"}</p></div>
             )}
           </div>
+          {membership.role === Role.ADMIN && <div className="sm:col-span-2"><label htmlFor="nutritionistId" className={labelClassName}>Nutricionista responsável<select id="nutritionistId" name="nutritionistId" defaultValue={student.nutritionistId ?? ""} className={inputClassName}><option value="">Sem acompanhamento nutricional</option>{nutritionists.map(item => <option key={item.id} value={item.id}>{item.user.name}</option>)}</select></label><p className="mt-1 text-xs text-[#64707d]">O profissional vinculado poderá publicar orientações particulares para este aluno.</p></div>}
           <label className={labelClassName}>Telefone<input name="phone" type="tel" maxLength={25} defaultValue={student.phone ?? ""} className={inputClassName} /></label>
           <div className="sm:col-span-2"><label htmlFor="goal" className={labelClassName}>Objetivo<input id="goal" name="goal" defaultValue={student.goal ?? ""} className={inputClassName} /></label></div>
           <div className="sm:col-span-2"><label htmlFor="notes" className={labelClassName}>Observações<textarea id="notes" name="notes" rows={5} defaultValue={student.notes ?? ""} className={inputClassName} /></label></div>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f6f6;
+  --background: #f5f7f9;
   --foreground: #161b22;
   --muted: #64707d;
   --line: #dfe3e6;
@@ -47,6 +47,9 @@ textarea {
 }
 
 body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+h1, h2 { letter-spacing: -.025em; }
+main > div { animation: surface-enter .35s ease-out both; }
+@keyframes surface-enter { from { opacity: .55; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 h1, h2, h3 { text-wrap: balance; }
 button, a, input, select, textarea, summary { touch-action: manipulation; }
 button:not(:disabled), summary { cursor: pointer; }

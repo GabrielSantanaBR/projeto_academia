@@ -32,7 +32,7 @@ export async function resetMemberPassword(data: FormData) {
     const viewer = await requireRole(Role.ADMIN);
     const input = z.object({ membershipId: z.string().min(1), password: passwordSchema, currentPassword: z.string().min(1).max(200) }).parse(formValues(data));
     if (!(await bcrypt.compare(input.currentPassword, viewer.user.passwordHash))) throw new InputError("A senha do administrador não confere.");
-    const member = await prisma.membership.findFirst({ where: { id: input.membershipId, organizationId: viewer.organizationId, role: { in: [Role.PROFESSOR, Role.STUDENT] } }, include: { user: { include: { _count: { select: { memberships: true } } } } } });
+    const member = await prisma.membership.findFirst({ where: { id: input.membershipId, organizationId: viewer.organizationId, role: { in: [Role.PROFESSOR, Role.STUDENT, Role.NUTRITIONIST] } }, include: { user: { include: { _count: { select: { memberships: true } } } } } });
     if (!member) throw new AuthorizationError();
     // Identity is global. An academy admin must never reset another tenant's identity.
     if (member.user._count.memberships !== 1) throw new InputError("Esta conta pertence a mais de uma academia. O próprio titular deve alterar a senha.");

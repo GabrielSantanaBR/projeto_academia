@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { ArrowRight, CalendarClock, Users } from "lucide-react";
+import { ArrowRight, CalendarClock, Users, HeartHandshake, Utensils } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -21,6 +21,7 @@ export default async function DashboardPage() {
         title="Visão geral"
         description="Acompanhe sua equipe e resolva as pendências de treino do dia."
       />
+      <section className="relative overflow-hidden bg-[#172b46] p-6 text-white sm:p-8"><span aria-hidden className="absolute -right-10 -top-20 size-64 rounded-full border-[30px] border-white/5" /><div className="relative flex flex-wrap items-end justify-between gap-5"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#ffbc94]">Operação conectada</p><h2 className="mt-2 max-w-lg text-2xl font-bold tracking-tight sm:text-3xl">Treino, cuidado e comunidade no mesmo lugar.</h2><p className="mt-2 max-w-xl text-sm text-slate-300">Cada aluno tem um caminho claro; sua equipe acompanha o que precisa de atenção.</p></div><div className="flex flex-wrap gap-2"><Link href="/community" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/30 px-4 text-sm font-semibold transition hover:bg-white/10"><HeartHandshake className="size-4" /> Comunidade</Link><Link href="/nutritionists" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-[#172b46] transition hover:bg-slate-100"><Utensils className="size-4" /> Nutrição</Link></div></div></section>
 
       <section className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[#dfe3e6] bg-[#dfe3e6] sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Alunos ativos" value={dashboard.metrics.activeStudents} helper="Base atual da academia" />

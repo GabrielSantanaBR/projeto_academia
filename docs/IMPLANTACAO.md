@@ -17,6 +17,7 @@ O Blueprint espera verificações aprovadas no GitHub para deploys automáticos.
 1. Identifique o commit em produção e salve um backup recuperável do PostgreSQL, incluindo data e responsável.
 2. Restaure uma cópia isolada e execute `npm run db:deploy` nessa cópia antes de programar a atualização.
 3. A migration `20260910000000_commercial_readiness` adiciona campos, unidades, controle de sessão e índices. Não redefine nem remove usuários, planos ou sessões.
+   A migration `20260923000000_connected_experience` adiciona dados de vídeo, corrida, feed e nutrição. Faça teste de restauração e retenção desses novos dados particulares antes de migrar o ambiente real.
 4. Verifique duplicidades com as consultas abaixo. Se retornarem linhas, o índice novo recusará a migration. O responsável deve decidir qual plano manter publicado e qual sessão encerrar; preserve o histórico.
 5. Publique o commit validado, acompanhe o pre-deploy e confirme health check e fluxo de login. Mudanças de banco exigem um plano próprio de reversão: reverter o código não desfaz a migration.
 

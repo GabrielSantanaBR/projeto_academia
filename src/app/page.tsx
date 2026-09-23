@@ -13,5 +13,5 @@ export default async function Home() {
     throw error;
   }
 
-  redirect(membership.role === Role.STUDENT ? "/my-workout" : "/dashboard");
+  redirect(membership.role === Role.STUDENT ? "/my-workout" : membership.role === Role.NUTRITIONIST ? "/nutrition" : "/dashboard");
 }

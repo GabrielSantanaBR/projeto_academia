@@ -5,7 +5,7 @@
     "buildCommand": "npm run db:generate && npm run build"
   },
   "deploy": {
-    "preDeployCommand": "npm run db:deploy && if [ \"$DEMO_MODE\" = \"true\" ] && [ \"$ALLOW_DEMO_SEED\" = \"true\" ]; then npm run db:seed; fi",
+    "preDeployCommand": "npm run db:deploy && if [ \"$DEMO_MODE\" = \"true\" ] && [ \"$ALLOW_DEMO_SEED\" = \"true\" ]; then npm run db:seed && npm run demo:enrich; fi",
     "startCommand": "npm start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
