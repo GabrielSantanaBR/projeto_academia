@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "node:crypto";
 
-test("comunidade, corrida e plano nutricional funcionam com papéis separados", async ({ page }) => {
+test("comunidade, corrida e plano nutricional funcionam com papéis separados", async ({ page }, info) => {
   const db = new PrismaClient();
   const id = randomUUID();
   const password = "ConnectedBrowser123!";
@@ -32,9 +32,11 @@ test("comunidade, corrida e plano nutricional funcionam com papéis separados", 
   await page.getByLabel("O que você gostaria de compartilhar?").fill("Minha primeira semana de treinos completos.");
   await page.getByRole("button", { name: "Publicar", exact: true }).click();
   await expect(page.getByText("Minha primeira semana de treinos completos.")).toBeVisible();
+  await page.screenshot({ path: info.outputPath("comunidade.png"), fullPage: true });
   await page.goto("/my-runs");
   await expect(page.getByRole("heading", { name: "Minhas corridas" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Iniciar corrida" })).toBeVisible();
+  await page.screenshot({ path: info.outputPath("corridas.png"), fullPage: true });
   await page.goto("/my-nutrition");
   await expect(page.getByText("Ainda não há plano publicado")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
@@ -55,6 +57,7 @@ test("comunidade, corrida e plano nutricional funcionam com papéis separados", 
   await page.goto("/my-nutrition");
   await expect(page.getByRole("heading", { name: "Acompanhamento do mês" })).toBeVisible();
   await expect(page.getByText("Café da manhã")).toBeVisible();
+  await page.screenshot({ path: info.outputPath("nutricao.png"), fullPage: true });
   await page.goto("/nutrition");
   await expect(page).toHaveURL(/\/my-workout/);
 });

@@ -43,7 +43,7 @@ export async function toggleCommunityLike(data: FormData) {
     const viewer = await requireRole();
     const { postId } = postInput.parse(formValues(data));
     const post = await prisma.communityPost.findFirst({ where: { id: postId, organizationId: viewer.organizationId, hidden: false }, select: { id: true } });
-    if (!post) throw new AuthorizationError();
+    if (!post) throw new AuthorizationError("Esta publicação não está disponível.");
     const removed = await prisma.communityLike.deleteMany({ where: { organizationId: viewer.organizationId, postId, memberId: viewer.id } });
     if (!removed.count) await prisma.communityLike.create({ data: { organizationId: viewer.organizationId, postId, memberId: viewer.id } });
     revalidatePath("/community");
@@ -56,7 +56,7 @@ export async function moderateCommunityPost(data: FormData) {
     const viewer = await requireRole();
     const input = postInput.extend({ hidden: z.enum(["true", "false"]) }).parse(formValues(data));
     const post = await prisma.communityPost.findFirst({ where: { id: input.postId, organizationId: viewer.organizationId } });
-    if (!post || (viewer.role !== Role.ADMIN && post.authorId !== viewer.id) || (input.hidden === "false" && viewer.role !== Role.ADMIN)) throw new AuthorizationError();
+    if (!post || (viewer.role !== Role.ADMIN && post.authorId !== viewer.id) || (input.hidden === "false" && viewer.role !== Role.ADMIN)) throw new AuthorizationError("Esta publicação não está disponível para moderação.");
     await prisma.communityPost.updateMany({ where: { id: post.id, organizationId: viewer.organizationId }, data: { hidden: input.hidden === "true" } });
     revalidatePath("/community");
     return { success: input.hidden === "true" ? "Publicação ocultada." : "Publicação restaurada." };
@@ -68,7 +68,7 @@ export async function moderateCommunityComment(data: FormData) {
     const viewer = await requireRole();
     const input = z.object({ commentId: z.string().min(1) }).parse(formValues(data));
     const comment = await prisma.communityComment.findFirst({ where: { id: input.commentId, organizationId: viewer.organizationId, post: { organizationId: viewer.organizationId, hidden: false } }, select: { authorId: true } });
-    if (!comment || (comment.authorId !== viewer.id && viewer.role !== Role.ADMIN)) throw new AuthorizationError();
+    if (!comment || (comment.authorId !== viewer.id && viewer.role !== Role.ADMIN)) throw new AuthorizationError("Este comentário não está disponível para moderação.");
     await prisma.communityComment.updateMany({ where: { id: input.commentId, organizationId: viewer.organizationId }, data: { hidden: true } });
     revalidatePath("/community");
     return { success: "Comentário ocultado." };

@@ -43,7 +43,7 @@ export function RunRecorder() {
     setNotice("Aguardando sinal do GPS… Permita a localização quando o navegador solicitar.");
     setStatus("starting");
     if (startTime.current === null) startTime.current = Date.now();
-    else segment.current++;
+    else segment.current = (pointsRef.current.at(-1)?.segment ?? -1) + 1;
     watch.current = navigator.geolocation.watchPosition(position => {
       if (modeRef.current !== "starting" && modeRef.current !== "running") return;
       const { latitude: lat, longitude: lng, accuracy } = position.coords;
@@ -74,7 +74,7 @@ export function RunRecorder() {
         const result = await saveRunActivity(data);
         if (result.error) { setNotice(result.error); return; }
         setNotice(result.success ?? "Corrida salva.");
-        pointsRef.current = []; setPoints([]); activeMs.current = 0; activeFrom.current = null; startTime.current = null; segment.current = 0; setSeconds(0); setStatus("idle"); router.refresh();
+        pointsRef.current = []; setPoints([]); activeMs.current = 0; activeFrom.current = null; startTime.current = null; segment.current = 0; setSeconds(0); setStatus("idle"); router.replace("/my-runs"); router.refresh();
       } catch { setNotice("Sem conexão. Seu trajeto ainda está nesta tela; tente salvar novamente."); }
     });
   }

@@ -34,7 +34,7 @@ export async function setNutritionistAccess(data: FormData) {
     await prisma.$transaction(async tx => {
       await tx.$queryRaw`SELECT id FROM "Membership" WHERE id = ${input.membershipId} AND "organizationId" = ${viewer.organizationId} FOR UPDATE`;
       const professional = await tx.membership.findFirst({ where: { id: input.membershipId, organizationId: viewer.organizationId, role: Role.NUTRITIONIST } });
-      if (!professional) throw new AuthorizationError();
+      if (!professional) throw new AuthorizationError("Profissional não encontrado nesta academia.");
       if (input.active === "false" && await tx.studentProfile.count({ where: { organizationId: viewer.organizationId, nutritionistId: professional.id, status: StudentStatus.ACTIVE } })) throw new InputError("Remova os alunos vinculados antes de desativar este acesso.");
       await tx.membership.update({ where: { id: professional.id }, data: { active: input.active === "true" } });
       if (input.active === "false") await tx.user.update({ where: { id: professional.userId }, data: { sessionVersion: { increment: 1 } } });
