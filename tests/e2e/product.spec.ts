@@ -59,7 +59,9 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await page.getByRole("button", { name: "Criar plano" }).click();
   await expect(page.getByText("Plano criado.")).toBeVisible();
   await page.getByLabel("Aluno", { exact: true }).selectOption({ label: "Aluno Piloto" });
-  await page.getByLabel("Plano", { exact: true }).selectOption({ label: /Mensal piloto/ });
+  const planId = await page.getByLabel("Plano", { exact: true }).locator("option", { hasText: "Mensal piloto" }).getAttribute("value");
+  expect(planId).not.toBeNull();
+  await page.getByLabel("Plano", { exact: true }).selectOption(planId!);
   await page.getByRole("button", { name: "Salvar assinatura" }).click();
   await expect(page.getByText("Assinatura registrada.")).toBeVisible();
 
