@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, AlertTriangle, ClipboardList, LayoutDashboard, Settings, Users, UsersRound, History, TrendingUp, Ruler } from "lucide-react";
+import { Activity, AlertTriangle, ClipboardList, LayoutDashboard, Settings, Users, UsersRound, History, TrendingUp, Ruler, Utensils, Video, MapPinned, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
-const icons = { dashboard: LayoutDashboard, students: Users, teachers: UsersRound, templates: ClipboardList, exercises: Activity, pending: AlertTriangle, settings: Settings, 'my-workout': ClipboardList, 'my-history': History, 'my-progress': TrendingUp, 'my-assessments': Ruler };
+const icons = { dashboard: LayoutDashboard, students: Users, teachers: UsersRound, templates: ClipboardList, exercises: Activity, pending: AlertTriangle, settings: Settings, 'my-workout': ClipboardList, 'my-history': History, 'my-progress': TrendingUp, 'my-assessments': Ruler, 'my-nutrition': Utensils, 'my-feedback': Video, 'my-run': MapPinned, subscriptions: CreditCard, feedback: Video };
 export function NavLinks({ links, mobile = false, student = false }: { links: { href: string; label: string }[]; mobile?: boolean; student?: boolean }) {
   const path = usePathname();
   return links.map(item => {

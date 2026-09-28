@@ -18,6 +18,7 @@ const exerciseSchema = z.object({
   description: optionalText(500),
   instructions: optionalText(1_500),
   notes: optionalText(1_000),
+  videoUrl: z.union([z.literal(""), z.url().max(500).refine(value => value.startsWith("https://"), "Use um link HTTPS")]).optional().transform(value => value || null),
 });
 
 export async function createExercise(formData: FormData) {

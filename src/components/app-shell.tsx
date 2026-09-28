@@ -34,6 +34,8 @@ const navigation: Array<{
   { href: "/templates", label: "Modelos de treino", icon: ClipboardList, roles: [Role.ADMIN, Role.PROFESSOR] },
   { href: "/exercises", label: "Exercícios", icon: Activity, roles: [Role.ADMIN, Role.PROFESSOR] },
   { href: "/settings", label: "Academia", icon: Settings, roles: [Role.ADMIN] },
+  { href: "/subscriptions", label: "Assinaturas", icon: ClipboardList, roles: [Role.ADMIN] },
+  { href: "/feedback", label: "Avaliar vídeos", icon: Activity, roles: [Role.ADMIN, Role.PROFESSOR] },
   { href: "/pending", label: "Pendências", icon: AlertTriangle, roles: [Role.ADMIN, Role.PROFESSOR] },
 ];
 

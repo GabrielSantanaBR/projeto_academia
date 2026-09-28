@@ -12,6 +12,9 @@ const items = [
   { href: "/my-history", label: "Histórico", icon: History },
   { href: "/my-progress", label: "Evolução", icon: BarChart3 },
   { href: "/my-assessments", label: "Avaliações", icon: UserRound },
+  { href: "/my-nutrition", label: "Nutrição", icon: UserRound },
+  { href: "/my-feedback", label: "Vídeos", icon: ClipboardList },
+  { href: "/my-run", label: "Corrida", icon: BarChart3 },
 ];
 
 export function StudentShell({
@@ -32,7 +35,7 @@ export function StudentShell({
       </header>
       <main id="main-content" className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#dfe3e6] bg-white pb-[env(safe-area-inset-bottom)]" aria-label="Navegação do aluno">
-        <div className="mx-auto grid max-w-3xl grid-cols-4 px-1">
+        <div className="mx-auto flex max-w-3xl overflow-x-auto px-1">
           <NavLinks links={items.map(({href, label}) => ({href, label}))} student />
         </div>
       </nav>

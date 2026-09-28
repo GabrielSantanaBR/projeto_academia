@@ -519,6 +519,25 @@ async function main() {
     });
   }
 
+  // Cenários comerciais fictícios para apresentar o acompanhamento sem exigir cadastro manual.
+  const monthly = await prisma.subscriptionPlan.create({ data: { organizationId: organization.id, name: "Mensal Essencial", priceCents: 12990, durationDays: 30 } });
+  const quarterly = await prisma.subscriptionPlan.create({ data: { organizationId: organization.id, name: "Trimestral Acompanhado", priceCents: 32990, durationDays: 90 } });
+  for (const [index, student] of students.slice(0, 12).entries()) {
+    const plan = index % 3 === 0 ? quarterly : monthly;
+    const startsAt = daysFromNow(-(index % 4) * 7);
+    const expiresAt = new Date(startsAt.getTime() + plan.durationDays * 86400000);
+    await prisma.studentSubscription.create({ data: { studentId: student.id, planId: plan.id, startsAt, expiresAt } });
+  }
+  await prisma.nutritionNote.createMany({ data: [
+    { organizationId: organization.id, studentId: students[0].id, authorId: students[0].membershipId, body: "Quero organizar melhor os horários de alimentação nos dias em que treino cedo." },
+    { organizationId: organization.id, studentId: students[0].id, authorId: teachers[0].id, body: "Registrei sua dúvida para acompanhamento. Podemos conversar sobre sua rotina na próxima avaliação." },
+  ] });
+  await prisma.outdoorRun.create({ data: {
+    organizationId: organization.id, studentId: students[0].id,
+    startedAt: daysFromNow(-2), finishedAt: new Date(daysFromNow(-2).getTime() + 27 * 60000), distanceMeters: 3420,
+    route: [{ lat: -22.999, lng: -43.365, at: daysFromNow(-2).getTime() }, { lat: -23.001, lng: -43.362, at: daysFromNow(-2).getTime() + 27 * 60000 }],
+  } });
+
   console.log("Seed concluído para Movimento Academia.");
   console.log("Admin: admin@movimento.fit / Demo123!");
   console.log("Professor: rafael@movimento.fit / Demo123!");
