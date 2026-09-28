@@ -52,6 +52,10 @@ model Organization {
   workoutExercises WorkoutExercise[]
   sessions         WorkoutSession[]
   assessments      PhysicalAssessment[]
+  subscriptionPlans SubscriptionPlan[]
+  nutritionNotes    NutritionNote[]
+  exerciseFeedback ExerciseFeedback[]
+  outdoorRuns OutdoorRun[]
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 }
@@ -105,6 +109,10 @@ model StudentProfile {
   workoutPlans     WorkoutPlan[]
   sessions         WorkoutSession[]
   assessments      PhysicalAssessment[]
+  subscription     StudentSubscription?
+  nutritionNotes   NutritionNote[]
+  exerciseFeedback ExerciseFeedback[]
+  outdoorRuns OutdoorRun[]
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
@@ -122,6 +130,7 @@ model Exercise {
   description             String?
   instructions            String?
   notes                   String?
+  videoUrl                String?
   organization            Organization?            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   templateExercises       TemplateExercise[]
   workoutExercises        WorkoutExercise[]
@@ -281,6 +290,7 @@ model WorkoutSessionExercise {
   suggestedLoad     Float?
   instructions      String?
   notes             String?
+  videoUrl          String?
   completedAt       DateTime?
   session           WorkoutSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   workoutExercise   WorkoutExercise? @relation(fields: [workoutExerciseId], references: [id], onDelete: SetNull)
@@ -330,4 +340,65 @@ model LoginThrottle {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+model SubscriptionPlan {
+  id             String @id @default(cuid())
+  organizationId String
+  name           String
+  priceCents     Int
+  durationDays   Int
+  active         Boolean @default(true)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscriptions  StudentSubscription[]
+  @@unique([organizationId, name])
+}
+
+model StudentSubscription {
+  id         String @id @default(cuid())
+  studentId  String @unique
+  planId     String
+  startsAt   DateTime
+  expiresAt  DateTime
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+}
+
+model NutritionNote {
+  id             String @id @default(cuid())
+  organizationId String
+  studentId      String
+  authorId       String
+  body           String
+  createdAt      DateTime @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  @@index([organizationId, studentId, createdAt])
+}
+
+model ExerciseFeedback {
+  id String @id @default(cuid())
+  organizationId String
+  studentId String
+  exerciseName String
+  videoUrl String
+  comment String?
+  coachReply String?
+  createdAt DateTime @default(now())
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  @@index([organizationId, studentId, createdAt])
+}
+
+model OutdoorRun {
+  id String @id @default(cuid())
+  organizationId String
+  studentId String
+  startedAt DateTime
+  finishedAt DateTime
+  distanceMeters Int
+  route Json
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  @@index([organizationId, studentId, startedAt])
 }

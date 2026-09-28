@@ -62,7 +62,7 @@ npm run db:seed
 npm run dev
 ```
 
-O seed cria 25 alunos, quatro professores, modelos, planos, sessões, avaliações e cenários de pendência. Ele não apaga dados: se a demonstração já existe, encerra sem alterações; se encontra outra organização ou usuários, recusa a carga.
+O seed cria 25 alunos, quatro professores, modelos, planos de treino, assinaturas, sessões, avaliações, conversa nutricional, corrida ilustrativa e cenários de pendência. Veja `docs/ROTEIRO_DEMONSTRACAO.md` para a apresentação comercial. Ele não apaga dados: se a demonstração já existe, encerra sem alterações; se encontra outra organização ou usuários, recusa a carga.
 
 | Perfil | E-mail | Senha de demonstração |
 | --- | --- | --- |
@@ -130,3 +130,14 @@ Antes de migrar um banco existente, faça e verifique um backup. A migration 0.2
 A entrega é gestão de treinamento e acompanhamento. Pagamentos, mensalidades, catracas, biometria, disparos de WhatsApp, nutrição, IA, app nativo e importação automática de bases legadas exigem um projeto adicional.
 
 Uma entrega em cinco dias depende de infraestrutura acessível, materiais e decisões da academia no primeiro dia, escopo fechado e disponibilidade para homologação. A configuração de domínio, política de backup e teste com usuários reais fazem parte da implantação. Não apresente o prazo como garantia para integrações ainda não implementadas.
+
+
+## Recursos de acompanhamento (setembro de 2026)
+
+- Professor/admin cadastra um URL HTTPS de demonstração por exercício; a sessão guarda uma cópia do link para manter a orientação original. Verifique direitos de uso e disponibilidade dos vídeos externos.
+- Aluno e equipe trocam registros de nutrição por academia; esta área não substitui consulta nem prescrição nutricional.
+- Administrador cria planos com preço e duração e atribui vigência aos alunos. Não há processamento de pagamentos, renovação automática ou bloqueio de acesso por vencimento.
+- Aluno envia um link HTTPS de vídeo para avaliação; a equipe responde no painel. O arquivo permanece hospedado fora do sistema, sujeito às permissões do serviço escolhido.
+- Corridas usam a geolocalização do navegador (HTTPS e permissão obrigatórios); a página precisa ficar ativa até finalizar. O servidor valida pontos e salva até 500 posições por corrida. Não há rastreamento em segundo plano nem mapa integrado. Trate as coordenadas como dados pessoais e restrinja acesso ao banco.
+
+Execute `prisma migrate deploy` no ambiente com `DATABASE_URL` configurado antes de liberar as novas páginas. Faça backup do banco antes da migração. As migrações apenas adicionam tabelas/colunas.

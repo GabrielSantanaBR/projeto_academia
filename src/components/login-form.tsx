@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
+import { GraduationCap, Building2, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -14,7 +14,7 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [demoRole, setDemoRole] = useState<"professor" | "aluno" | null>(null);
+  const [demoRole, setDemoRole] = useState<"admin" | "professor" | "aluno" | null>(null);
 
   function getDestination() {
     const requestedPath = params.get("callbackUrl");
@@ -57,12 +57,12 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
     }
   }
 
-  async function signInDemo(role: "professor" | "aluno") {
+  async function signInDemo(role: "admin" | "professor" | "aluno") {
     setError(null);
     setDemoRole(role);
     setIsLoading(true);
 
-    const email = role === "professor" ? "rafael@movimento.fit" : "aluno@movimento.fit";
+    const email = role === "admin" ? "admin@movimento.fit" : role === "professor" ? "rafael@movimento.fit" : "aluno@movimento.fit";
 
     try {
       await authenticate(email, DEMO_PASSWORD);
@@ -89,6 +89,10 @@ export function LoginForm({ demo = false }: { demo?: boolean }) {
             As contas abaixo usam somente dados fictícios e entram com um clique.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => signInDemo("admin")} disabled={isLoading} className="flex min-h-16 items-center gap-3 rounded-lg border border-amber-300 bg-white px-4 text-left transition hover:border-[var(--accent)] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2">
+              {demoRole === "admin" ? <LoaderCircle className="size-5 animate-spin text-[var(--accent)]" /> : <Building2 className="size-5 text-[var(--accent)]" />}
+              <span><span className="block text-sm font-bold text-[#161b22]">Entrar como Administrador</span><span className="block text-xs text-[#64707d]">Visão comercial, equipe e assinaturas</span></span>
+            </button>
             <button
               type="button"
               onClick={() => signInDemo("professor")}

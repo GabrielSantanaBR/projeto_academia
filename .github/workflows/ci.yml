@@ -42,6 +42,13 @@ jobs:
       - run: npm ci
       - run: npm run db:generate
       - run: npm run db:deploy
+      - name: Validate first and repeated demo seed on an isolated database
+        run: |
+          PGPASSWORD=ci-only-password createdb -h localhost -U movimento movimento_demo_test
+          export DATABASE_URL=postgresql://movimento:ci-only-password@localhost:5432/movimento_demo_test
+          npm run db:deploy
+          DEMO_MODE=true ALLOW_DEMO_SEED=true npm run db:seed
+          DEMO_MODE=true ALLOW_DEMO_SEED=true npm run db:seed
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test

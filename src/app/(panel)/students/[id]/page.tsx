@@ -58,6 +58,7 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
         }
       />
 
+      <Link href={`/students/${student.id}/nutrition`} className="secondary-button">Acompanhamento nutricional ↗</Link>
       <nav className="flex gap-1 overflow-x-auto border-b border-[#dfe3e6]" aria-label="Seções do aluno">
         {tabs.map(([value, label]) => (
           <Link

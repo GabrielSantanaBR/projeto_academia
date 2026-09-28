@@ -6,7 +6,7 @@ import { saveStudentWorkout } from "@/app/actions/sessions";
 import type { ActionResult } from "@/lib/action-result";
 import { formatKg } from "@/lib/format";
 
-type Item = { id: string; exerciseId: string; exerciseName: string; targetRepsMin: number; targetRepsMax: number; unit: "REPS" | "SECONDS"; restSeconds: number; suggestedLoad: number | null; instructions: string | null; notes: string | null; sets: { id: string; setNumber: number; load: number | null; reps: number | null; done: boolean }[] };
+type Item = { id: string; exerciseId: string; exerciseName: string; targetRepsMin: number; targetRepsMax: number; unit: "REPS" | "SECONDS"; restSeconds: number; suggestedLoad: number | null; instructions: string | null; notes: string | null; videoUrl: string | null; sets: { id: string; setNumber: number; load: number | null; reps: number | null; done: boolean }[] };
 
 export function WorkoutLogger({ sessionId, initialVersion, exercises, lastLoads }: { sessionId: string; initialVersion: number; exercises: Item[]; lastLoads: Record<string, number> }) {
   const [version, setVersion] = useState(initialVersion);
@@ -62,6 +62,7 @@ export function WorkoutLogger({ sessionId, initialVersion, exercises, lastLoads 
       {exercises.map((exercise, index) => <section key={exercise.id} className="overflow-hidden rounded-xl border border-[#dfe3e6] bg-white">
         <div className="space-y-3 border-b border-[#edf0f2] p-5"><div className="flex gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#fff7ed] font-bold text-[var(--accent)]">{index + 1}</span><div className="min-w-0"><h2 className="font-bold">{exercise.exerciseName}</h2><p className="mt-1 text-sm text-[#64707d]">{exercise.sets.length} séries · {exercise.targetRepsMin}–{exercise.targetRepsMax} {exercise.unit === 'SECONDS' ? 'segundos' : 'repetições'}</p></div></div>
           <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-[#64707d]">{lastLoads[exercise.exerciseId] !== undefined ? `Última carga: ${formatKg(lastLoads[exercise.exerciseId])}` : exercise.suggestedLoad !== null ? `Carga sugerida: ${formatKg(exercise.suggestedLoad)}` : 'Carga livre conforme orientação'}</p><button type="button" className="secondary-button" onClick={() => { setRemaining(exercise.restSeconds); setTimerEnd(Date.now() + exercise.restSeconds * 1000); }}><Timer className="size-4" /> Descanso {exercise.restSeconds}s</button></div>
+          {exercise.videoUrl && <a href={exercise.videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sm font-bold text-[var(--accent)] underline">Assistir demonstração ↗</a>}
           {(exercise.instructions || exercise.notes) && <details className="text-sm text-[#64707d]"><summary className="cursor-pointer py-2 font-semibold text-[var(--accent)]">Ver orientações</summary>{exercise.instructions && <p className="py-1 leading-6">{exercise.instructions}</p>}{exercise.notes && <p className="py-1 leading-6">{exercise.notes}</p>}</details>}
         </div>
         <div className="grid grid-cols-[2rem_1fr_1fr_2.75rem] gap-2 border-b border-[#edf0f2] px-4 py-3 text-xs font-semibold text-[#64707d] sm:px-5"><span>Série</span><span>Carga (kg)</span><span>{exercise.unit === 'SECONDS' ? 'Segundos' : 'Repetições'}</span><span>Feita</span></div>

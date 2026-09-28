@@ -31,6 +31,7 @@ export default function NewExercisePage() {
           <label htmlFor="instructions" className={labelClassName}>Instruções</label>
           <textarea id="instructions" name="instructions" rows={4} className={inputClassName} placeholder="Pontos técnicos importantes." />
         </div>
+        <div><label htmlFor="videoUrl" className={labelClassName}>Vídeo demonstrativo (HTTPS)</label><input id="videoUrl" name="videoUrl" type="url" maxLength={500} className={inputClassName} placeholder="https://..." /></div>
         <div>
           <label htmlFor="notes" className={labelClassName}>Observações internas</label>
           <textarea id="notes" name="notes" rows={3} className={inputClassName} />
