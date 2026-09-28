@@ -55,12 +55,57 @@ async function createUserWithMembership(input: {
   });
 }
 
+async function seedDemoFeatures(organizationId: string) {
+  const [students, teacher] = await Promise.all([
+    prisma.studentProfile.findMany({ where: { organizationId }, orderBy: { createdAt: "asc" }, take: 12 }),
+    prisma.membership.findFirst({ where: { organizationId, user: { email: "rafael@movimento.fit" }, role: Role.PROFESSOR } }),
+  ]);
+  if (!students.length || !teacher) {
+    console.log("Cenários adicionais ignorados: faltam aluno ou professor fictícios.");
+    return;
+  }
+  const monthly = await prisma.subscriptionPlan.upsert({
+    where: { organizationId_name: { organizationId, name: "Mensal Essencial" } },
+    create: { organizationId, name: "Mensal Essencial", priceCents: 12990, durationDays: 30 }, update: {},
+  });
+  const quarterly = await prisma.subscriptionPlan.upsert({
+    where: { organizationId_name: { organizationId, name: "Trimestral Acompanhado" } },
+    create: { organizationId, name: "Trimestral Acompanhado", priceCents: 32990, durationDays: 90 }, update: {},
+  });
+  for (const [index, student] of students.entries()) {
+    if (await prisma.studentSubscription.findUnique({ where: { studentId: student.id } })) continue;
+    const plan = index % 3 === 0 ? quarterly : monthly;
+    const startsAt = daysFromNow(-(index % 4) * 7);
+    await prisma.studentSubscription.create({ data: {
+      studentId: student.id, planId: plan.id, startsAt,
+      expiresAt: new Date(startsAt.getTime() + plan.durationDays * 86400000),
+    } });
+  }
+  const first = students[0];
+  if (!await prisma.nutritionNote.count({ where: { organizationId, studentId: first.id } })) {
+    await prisma.nutritionNote.createMany({ data: [
+      { organizationId, studentId: first.id, authorId: first.membershipId, body: "Quero organizar melhor os horários de alimentação nos dias em que treino cedo." },
+      { organizationId, studentId: first.id, authorId: teacher.id, body: "Registrei sua dúvida para acompanhamento. Podemos conversar sobre sua rotina na próxima avaliação." },
+    ] });
+  }
+  if (!await prisma.outdoorRun.count({ where: { organizationId, studentId: first.id } })) {
+    const startedAt = daysFromNow(-2);
+    const finishedAt = new Date(startedAt.getTime() + 27 * 60000);
+    await prisma.outdoorRun.create({ data: {
+      organizationId, studentId: first.id, startedAt, finishedAt, distanceMeters: 3420,
+      route: [{ lat: -22.999, lng: -43.365, at: startedAt.getTime() }, { lat: -23.001, lng: -43.362, at: finishedAt.getTime() }],
+    } });
+  }
+  console.log("Cenários de assinatura, nutrição e corrida verificados sem apagar registros existentes.");
+}
+
 async function main() {
   if (process.env.ALLOW_DEMO_SEED !== "true" || process.env.DEMO_MODE !== "true") {
     throw new Error("Seed bloqueado: use apenas um ambiente de demonstração com DEMO_MODE=true e ALLOW_DEMO_SEED=true.");
   }
-  if (await prisma.organization.findUnique({ where: { slug: "movimento-academia" } })) {
-    console.log("Demonstração já existe. Nenhum dado foi alterado.");
+  const existingDemo = await prisma.organization.findUnique({ where: { slug: "movimento-academia" } });
+  if (existingDemo) {
+    await seedDemoFeatures(existingDemo.id);
     return;
   }
   if (await prisma.organization.count() || await prisma.user.count()) {
@@ -519,24 +564,7 @@ async function main() {
     });
   }
 
-  // Cenários comerciais fictícios para apresentar o acompanhamento sem exigir cadastro manual.
-  const monthly = await prisma.subscriptionPlan.create({ data: { organizationId: organization.id, name: "Mensal Essencial", priceCents: 12990, durationDays: 30 } });
-  const quarterly = await prisma.subscriptionPlan.create({ data: { organizationId: organization.id, name: "Trimestral Acompanhado", priceCents: 32990, durationDays: 90 } });
-  for (const [index, student] of students.slice(0, 12).entries()) {
-    const plan = index % 3 === 0 ? quarterly : monthly;
-    const startsAt = daysFromNow(-(index % 4) * 7);
-    const expiresAt = new Date(startsAt.getTime() + plan.durationDays * 86400000);
-    await prisma.studentSubscription.create({ data: { studentId: student.id, planId: plan.id, startsAt, expiresAt } });
-  }
-  await prisma.nutritionNote.createMany({ data: [
-    { organizationId: organization.id, studentId: students[0].id, authorId: students[0].membershipId, body: "Quero organizar melhor os horários de alimentação nos dias em que treino cedo." },
-    { organizationId: organization.id, studentId: students[0].id, authorId: teachers[0].id, body: "Registrei sua dúvida para acompanhamento. Podemos conversar sobre sua rotina na próxima avaliação." },
-  ] });
-  await prisma.outdoorRun.create({ data: {
-    organizationId: organization.id, studentId: students[0].id,
-    startedAt: daysFromNow(-2), finishedAt: new Date(daysFromNow(-2).getTime() + 27 * 60000), distanceMeters: 3420,
-    route: [{ lat: -22.999, lng: -43.365, at: daysFromNow(-2).getTime() }, { lat: -23.001, lng: -43.362, at: daysFromNow(-2).getTime() + 27 * 60000 }],
-  } });
+  await seedDemoFeatures(organization.id);
 
   console.log("Seed concluído para Movimento Academia.");
   console.log("Admin: admin@movimento.fit / Demo123!");
