@@ -52,6 +52,17 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await expect(page.getByRole("heading", { name: "Aluno Piloto", exact: true })).toBeVisible();
   const studentPath = new URL(page.url()).pathname;
 
+  await page.goto("/subscriptions");
+  await page.getByRole("heading", { name: "Planos e assinaturas" }).waitFor();
+  await page.getByLabel("Nome", { exact: true }).fill("Mensal piloto");
+  await page.getByLabel("Preço (R$)").fill("99.90");
+  await page.getByRole("button", { name: "Criar plano" }).click();
+  await expect(page.getByText("Plano criado.")).toBeVisible();
+  await page.getByLabel("Aluno", { exact: true }).selectOption({ label: "Aluno Piloto" });
+  await page.getByLabel("Plano", { exact: true }).selectOption({ label: /Mensal piloto/ });
+  await page.getByRole("button", { name: "Salvar assinatura" }).click();
+  await expect(page.getByText("Assinatura registrada.")).toBeVisible();
+
   await page.goto("/settings");
   await page.getByLabel("Nome da academia").fill("Academia Movimento Piloto");
   await page.getByLabel("Cidade", { exact: true }).fill("São Paulo");
@@ -70,6 +81,10 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
   await logout(page);
 
   await firstAccess(page, accounts.teacher);
+  await page.goto(`${studentPath}/nutrition`);
+  await page.getByLabel("Novo registro").fill("Vamos acompanhar a rotina das refeições na próxima avaliação.");
+  await page.getByRole("button", { name: "Publicar registro" }).click();
+  await expect(page.getByText("Registro adicionado.")).toBeVisible();
   await page.goto("/templates/new");
   await page.getByLabel("Nome do modelo", { exact: true }).fill("Modelo Piloto");
   await page.getByLabel("Nome do dia", { exact: true }).fill("Corpo inteiro");
@@ -96,6 +111,18 @@ test("administra a academia e completa o ciclo real de professor e aluno", async
 
   await firstAccess(page, accounts.student);
   await expect(page).toHaveURL(/\/my-workout$/);
+  await page.goto("/my-nutrition");
+  await expect(page.getByText("Mensal piloto", { exact: false })).toBeVisible();
+  await expect(page.getByText("Vamos acompanhar a rotina das refeições", { exact: false })).toBeVisible();
+  await page.goto("/my-feedback");
+  await page.getByLabel("Exercício").fill("Agachamento");
+  await page.getByLabel("Link do vídeo (HTTPS)").fill("https://example.com/video-de-demonstracao");
+  await page.getByRole("button", { name: "Enviar para avaliação" }).click();
+  await expect(page.getByText("Vídeo enviado para avaliação.")).toBeVisible();
+  await page.goto("/my-run");
+  await expect(page.getByRole("button", { name: "Iniciar corrida" })).toBeVisible();
+  await fitsViewport(page);
+  await page.goto("/my-workout");
   await page.getByRole("button", { name: "Iniciar", exact: true }).click();
   await expect(page).toHaveURL(/\/my-workout\/session\//);
   const load = page.getByRole("spinbutton", { name: "Agachamento, série 1, carga em kg", exact: true });
